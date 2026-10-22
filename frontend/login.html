@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f7f8fc">
+    <meta name="theme-color" content="#f1effb">
     <title>Sign in | StudyPilot</title>
     <link rel="stylesheet" href="auth.css">
   </head>
@@ -23,10 +23,9 @@
         </form>
         <form id="register-form" class="auth-card">
           <h2>Create account</h2>
-          <label>Name <span>(optional)</span><input name="full_name" autocomplete="name" maxlength="120"></label>
+          <label>Student name<input name="full_name" autocomplete="name" maxlength="120" required></label>
           <label>Email<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
           <label>Password <span>(12 characters or more)</span><input type="password" name="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
-          <label>Initial setup token <span>(first account only)</span><input type="password" name="bootstrap_token" autocomplete="off" maxlength="256"></label>
           <button type="submit">Create account</button>
         </form>
       </div>

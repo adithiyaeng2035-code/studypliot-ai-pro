@@ -11,7 +11,6 @@ from app.services.task_service import create_task
 def test_hosted_accounts_isolate_tasks_and_protect_mutations(tmp_path, monkeypatch):
     monkeypatch.setattr(routes, "AUTH_ENABLED", True)
     monkeypatch.setattr(routes, "AUTH_COOKIE_SECURE", False)
-    monkeypatch.setattr(auth_service, "AUTH_BOOTSTRAP_TOKEN", "private-first-account-token")
     monkeypatch.setattr(auth_service, "AUTH_ALLOW_REGISTRATION", True)
 
     database = Database(tmp_path / "accounts.sqlite3")
@@ -26,14 +25,22 @@ def test_hosted_accounts_isolate_tasks_and_protect_mutations(tmp_path, monkeypat
             "email": "student-one@example.edu",
             "password": "correct-horse-battery-staple",
             "full_name": "Student One",
-            "bootstrap_token": "private-first-account-token",
         },
     )
     assert registration.status_code == 201
+    assert registration.json()["user"]["full_name"] == "Student One"
     csrf = registration.json()["csrf_token"]
     assert registration.headers["set-cookie"].lower().find("httponly") >= 0
     assert first.get("/api/tasks").json()["total"] == 1
     assert first.get("/api/tasks").json()["items"][0]["id"] == legacy_task["id"]
+    assert first.get("/api/auth/me").json()["user"]["full_name"] == "Student One"
+    signed_in = first.post(
+        "/api/auth/login",
+        json={"email": "student-one@example.edu", "password": "correct-horse-battery-staple"},
+    )
+    assert signed_in.status_code == 200
+    assert signed_in.json()["user"]["full_name"] == "Student One"
+    csrf = signed_in.json()["csrf_token"]
 
     created = first.post(
         "/api/tasks",
@@ -63,6 +70,7 @@ def test_hosted_accounts_isolate_tasks_and_protect_mutations(tmp_path, monkeypat
         json={
             "email": "student-two@example.edu",
             "password": "another-correct-horse-battery",
+            "full_name": "Student Two",
         },
     )
     assert second_registration.status_code == 201
@@ -99,10 +107,10 @@ def test_hosted_accounts_isolate_tasks_and_protect_mutations(tmp_path, monkeypat
     assert first.get("/api/tasks").json()["total"] == 2
 
 
-def test_hosted_auth_requires_bootstrap_token_and_redirects_pages(tmp_path, monkeypatch):
+def test_hosted_auth_redirects_pages_and_registration_needs_no_setup_token(tmp_path, monkeypatch):
     monkeypatch.setattr(routes, "AUTH_ENABLED", True)
     monkeypatch.setattr(routes, "AUTH_COOKIE_SECURE", False)
-    monkeypatch.setattr(auth_service, "AUTH_BOOTSTRAP_TOKEN", "expected-token")
+    monkeypatch.setattr(auth_service, "AUTH_ALLOW_REGISTRATION", True)
 
     database = Database(tmp_path / "auth-bootstrap.sqlite3")
     database.initialize()
@@ -113,7 +121,38 @@ def test_hosted_auth_requires_bootstrap_token_and_redirects_pages(tmp_path, monk
     assert page.headers["location"] == "/login.html"
     response = client.post(
         "/api/auth/register",
+        json={"email": "student@example.edu", "password": "long-enough-password", "full_name": "First Student"},
+    )
+    assert response.status_code == 201
+    assert response.json()["user"]["full_name"] == "First Student"
+
+
+def test_registration_requires_a_student_name(tmp_path, monkeypatch):
+    monkeypatch.setattr(routes, "AUTH_ENABLED", True)
+    database = Database(tmp_path / "auth-name-required.sqlite3")
+    client = TestClient(routes.create_app(database))
+
+    response = client.post(
+        "/api/auth/register",
         json={"email": "student@example.edu", "password": "long-enough-password"},
     )
+    assert response.status_code == 422
+
+
+def test_registration_can_be_closed_before_first_account(tmp_path, monkeypatch):
+    monkeypatch.setattr(routes, "AUTH_ENABLED", True)
+    monkeypatch.setattr(auth_service, "AUTH_ALLOW_REGISTRATION", False)
+    database = Database(tmp_path / "auth-registration-closed.sqlite3")
+    client = TestClient(routes.create_app(database))
+
+    response = client.post(
+        "/api/auth/register",
+        json={
+            "email": "student@example.edu",
+            "password": "long-enough-password",
+            "full_name": "Student Name",
+        },
+    )
     assert response.status_code == 403
+    assert "registration is disabled" in response.json()["detail"]
 

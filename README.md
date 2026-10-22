@@ -25,6 +25,15 @@ Open <http://127.0.0.1:8000>. Tasks and progress are stored in
 `data/studypilot.sqlite3` by default. Set `STUDYPILOT_DATABASE` to use another
 SQLite database path.
 
+To use student registration and login locally, start with `.\run-local-auth.ps1`.
+It enables account-scoped SQLite data. Registration saves the student's name,
+email, and password hash; the signed-in StudyPilot pages display the student's
+name. Existing accounts without a name display their email instead.
+
+The AI study tutor at `/tutor.html` supports follow-up chat with the configured
+OpenAI-compatible provider. Microphone dictation and read-aloud use the browser's
+built-in speech APIs and may require microphone permission and a supported browser.
+
 ## Deploy publicly on Vercel
 
 For a public deployment, use managed PostgreSQL and enable hosted authentication
@@ -63,18 +72,15 @@ On startup, the app applies any unapplied versioned SQL migrations from
 ### Enable hosted accounts
 
 Account access is off for the default local single-user setup. For a hosted
-deployment, enable authentication behind HTTPS and create a one-time first-account
-setup token:
+deployment, enable authentication behind HTTPS:
 
 ```powershell
 $env:AUTH_ENABLED = "true"
-$env:AUTH_BOOTSTRAP_TOKEN = (python -c "import secrets; print(secrets.token_urlsafe(32))")
 $env:AUTH_ALLOW_REGISTRATION = "true"
 python -m app.main
 ```
 
-The first account registration must include that setup token. The first account
-adopts any existing unowned tasks and focus sessions. New accounts receive
+The first account adopts any existing unowned tasks and focus sessions. New accounts receive
 separate data. Registration is open by default after the first account; set
 `AUTH_ALLOW_REGISTRATION=false` to close it. `AUTH_COOKIE_SECURE` defaults to
 `true` when authentication is enabled, so serve the app through HTTPS. For local
@@ -114,6 +120,9 @@ be undone; export a backup first if you want to keep a copy.
 - Use the Doubt Solver across subjects and study levels, including school, B.Tech,
   and M.Tech, for an AI-generated explanation, reasoning steps, concept summary,
   likely misconception, and check-for-understanding question.
+- Use the AI tutor for multilingual subject explanations, exam preparation by
+  class / degree / board / university, industry applications, and study-time
+  coaching from saved focus sessions over the last 7 and 30 days.
 - Request an on-demand, model-assisted progress review with strengths, focus
   areas, evidence-based actions, and a link into the approval-based study planner.
 - Generate a goal-based AI study-plan draft, review it, and explicitly approve
@@ -127,11 +136,14 @@ be undone; export a backup first if you want to keep a copy.
 - Run the MCP tool server with `python -m app.mcp.server` after installing
   requirements.
 
-### Enable OpenAI doubt solving
+### Enable the OpenAI chatbot and AI features
 
-The Doubt Solver uses OpenAI's chat completions API. In a PowerShell window, set
-the model and API URL, enter your API key at the hidden prompt, and start the app
-from the project folder:
+For local development on Windows, run `.\run-openai.ps1` from PowerShell.
+It asks for your API key without displaying it, sets the OpenAI endpoint and
+model for the app process, and starts StudyPilot. Stop an already-running app
+first. The key is removed from the process environment when the app exits.
+
+Alternatively, set the environment variables manually in a PowerShell window:
 
 ```powershell
 $env:LLM_BASE_URL = "https://api.openai.com/v1"
@@ -148,12 +160,15 @@ is held only in that process environment; never commit it, put it in a URL, or
 paste it into chat. Create/manage the key in your OpenAI account and ensure API
 access and billing are enabled.
 
-The conversational assistant sends the student's question and a limited summary
-of open tasks and progress to the configured provider. Progress insights send
+The chatbot sends the current question and up to eight recent chat messages to
+the configured provider. Progress insights send
 aggregate task and subject counts, not task titles or descriptions. The Doubt
 Solver also sends the submitted subject, study level, and optional context. Do
 not configure a provider unless that data sharing is appropriate for you. AI
 output is a learning aid; verify important answers with course materials.
+The Study-time coach sends account-scoped daily focus totals and subject summaries
+for the last 30 days only when that mode is selected. To improve exam alignment,
+include the relevant grade / degree, exam, board, university, or syllabus in chat.
 The AI Planner also sends your goal, subject, deadline, study level, and
 availability to the configured provider. It creates only a draft first; sessions
 are added to the task database only after you select “Approve and add tasks”.

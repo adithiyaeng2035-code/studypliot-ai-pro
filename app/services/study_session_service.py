@@ -1,6 +1,6 @@
 """Persistent study-session history."""
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 from app.database.db import Database
@@ -108,3 +108,71 @@ def list_study_sessions(
             "total_sessions": totals["total_sessions"],
             "total_minutes": totals["total_minutes"],
         }
+
+
+def get_focus_time_analysis(
+    database: Database, *, today: date | None = None, user_id: int | None = None
+) -> dict[str, Any]:
+    """Return bounded daily and subject focus totals for the past 30 days."""
+    current_day = today or date.today()
+    start_day = current_day - timedelta(days=29)
+    owner_filter = " AND user_id = ?" if user_id is not None else ""
+    parameters: tuple[Any, ...] = (start_day.isoformat(), user_id) if user_id is not None else (start_day.isoformat(),)
+    with database.session() as connection:
+        daily_rows = connection.execute(
+            """SELECT SUBSTR(completed_at, 1, 10) AS study_day,
+                      COUNT(*) AS sessions,
+                      COALESCE(SUM(duration_minutes), 0) AS minutes
+               FROM study_sessions
+               WHERE completed_at >= ?""" + owner_filter +
+            " GROUP BY SUBSTR(completed_at, 1, 10) ORDER BY study_day",
+            parameters,
+        ).fetchall()
+        subject_rows = connection.execute(
+            """SELECT subject, COUNT(*) AS sessions,
+                      COALESCE(SUM(duration_minutes), 0) AS minutes
+               FROM study_sessions WHERE completed_at >= ?""" + owner_filter +
+            " GROUP BY subject ORDER BY minutes DESC, LOWER(subject) LIMIT 20",
+            parameters,
+        ).fetchall()
+
+    daily = {
+        (row["study_day"] if isinstance(row["study_day"], str) else row["study_day"].isoformat()): {
+            "sessions": int(row["sessions"]),
+            "minutes": int(row["minutes"]),
+        }
+        for row in daily_rows
+    }
+    days = [
+        {
+            "date": (start_day + timedelta(days=offset)).isoformat(),
+            **daily.get((start_day + timedelta(days=offset)).isoformat(), {"sessions": 0, "minutes": 0}),
+        }
+        for offset in range(30)
+    ]
+    last_7_days = days[-7:]
+    active_dates = {entry["date"] for entry in days if entry["sessions"]}
+    streak_anchor = current_day if current_day.isoformat() in active_dates else current_day - timedelta(days=1)
+    streak = 0
+    while streak_anchor.isoformat() in active_dates:
+        streak += 1
+        streak_anchor -= timedelta(days=1)
+    total_minutes = sum(entry["minutes"] for entry in days)
+    active_days = len(active_dates)
+    return {
+        "as_of_date": current_day.isoformat(),
+        "last_7_days": {
+            "minutes": sum(entry["minutes"] for entry in last_7_days),
+            "sessions": sum(entry["sessions"] for entry in last_7_days),
+            "daily": last_7_days,
+        },
+        "last_30_days": {
+            "minutes": total_minutes,
+            "sessions": sum(entry["sessions"] for entry in days),
+            "active_days": active_days,
+            "average_minutes_per_active_day": round(total_minutes / active_days) if active_days else 0,
+            "current_streak_days": streak,
+            "daily": days,
+            "by_subject": [dict(row) for row in subject_rows],
+        },
+    }

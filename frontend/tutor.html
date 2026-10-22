@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f1effb">
+    <title>AI Study Tutor | StudyPilot</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="tutor.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="StudyPilot home"><span class="brand-mark">S</span> StudyPilot</a>
+        <p class="nav-label">Workspace</p>
+        <nav aria-label="Main navigation">
+          <a class="nav-link" href="/#dashboard">▦ <span>Overview</span></a>
+          <a class="nav-link" href="/#tasks">✓ <span>My tasks</span></a>
+          <a class="nav-link" href="planner.html">✦ <span>Plan my studies</span></a>
+          <a class="nav-link" href="doubts.html">✎ <span>Explain a doubt</span></a>
+          <a class="nav-link active" href="tutor.html" aria-current="page">◉ <span>AI study tutor</span></a>
+        </nav>
+        <div class="account-box"><span id="account-email"></span><button id="sign-out" type="button">Sign out</button><details class="account-privacy" hidden><summary>Privacy &amp; account</summary><p>Questions sent to the tutor are processed by this app’s configured AI provider. Chat history stays in this browser tab and is not saved on the server. Time Coach sends account-scoped focus-session totals and subject summaries to the AI provider.</p><button class="delete-account" id="delete-account" type="button">Delete account and data</button></details></div>
+        <div class="sidebar-note"><span class="note-icon">✦</span><strong>Learn it in your own words.</strong><p>Ask a question, get a clear explanation, and follow up until it makes sense.</p></div>
+        <span class="sidebar-footer">Made for your next big goal</span>
+      </aside>
+      <main class="main-content tutor-main">
+        <header class="tutor-header">
+          <span class="eyebrow">YOUR AI STUDY PARTNER</span>
+          <div class="tutor-title-row"><div><h1>Ask, learn, and follow up.</h1><p>Get help across subjects and languages, prepare for exams, or review your study-time patterns.</p></div><button id="clear-chat" class="quiet-button" type="button">New chat</button></div>
+        </header>
+        <div id="tutor-notice" class="tutor-notice" role="status" hidden></div>
+        <section class="chat-panel" aria-label="StudyPilot tutor chat">
+          <div id="chat-messages" class="chat-messages" aria-live="polite">
+            <article class="chat-message assistant-message"><div class="avatar">S</div><div class="message-content"><span class="message-label">StudyPilot assistant</span><p>Hi! I can explain a topic, help with writing or code, plan study sessions, brainstorm ideas, or answer general questions. Pick a help mode or just ask.</p></div></article>
+            <div id="quick-prompts" class="quick-prompts" aria-label="Try asking">
+              <button type="button" data-prompt="Explain photosynthesis in simple steps with an example.">Explain a topic</button>
+              <button type="button" data-prompt="Help me prepare for my exam. Ask me for the subject, course, and exam standard you need." data-mode="exam_prep">Prepare for an exam</button>
+              <button type="button" data-prompt="Show how this subject is used in an industry. Ask me which sector or job role if needed." data-mode="industry">Industry examples</button>
+              <button type="button" data-prompt="Analyze my saved focus time for consistency and suggest a realistic weekly routine." data-mode="time_coach">Analyze my study time</button>
+              <button type="button" data-prompt="Help me debug this code. I will paste the error and code next.">Debug code</button>
+              <button type="button" data-prompt="Help me make a realistic study plan for this week.">Plan my week</button>
+              <button type="button" data-prompt="Help me improve this paragraph while keeping my writing style.">Improve writing</button>
+            </div>
+          </div>
+          <form id="tutor-form" class="chat-composer">
+            <label class="sr-only" for="tutor-message">Your study question</label>
+            <label class="study-context-field" for="study-context">Optional course or industry context</label>
+            <input id="study-context" name="study_context" maxlength="500" placeholder="Subject, class / degree, board / exam, industry, role, or country/region">
+            <textarea id="tutor-message" name="message" rows="2" maxlength="4000" placeholder="Ask a question or describe your doubt…" required></textarea>
+            <div class="composer-actions"><div class="composer-options"><label for="help-mode">Help with</label><select id="help-mode" name="mode"><option value="general">Anything</option><option value="learn">Explain &amp; learn</option><option value="exam_prep">Exam preparation</option><option value="industry">Industry applications</option><option value="time_coach">Study-time coach</option><option value="writing">Writing</option><option value="coding">Code &amp; debugging</option><option value="planning">Study planning</option><option value="brainstorm">Brainstorming</option></select><label for="voice-language">Voice</label><select id="voice-language" aria-label="Speech input language"><option value="en-US">English</option><option value="ta-IN">தமிழ்</option><option value="hi-IN">हिन्दी</option><option value="fr-FR">Français</option><option value="de-DE">Deutsch</option><option value="ja-JP">日本語</option></select><span id="voice-status" class="voice-status">Enter sends · Shift+Enter adds a line</span></div><div class="composer-buttons"><button id="voice-input" class="quiet-button voice-button" type="button" aria-label="Start voice input">🎙 <span>Speak</span></button><button id="send-question" class="primary-button send-button" type="submit">Ask <span aria-hidden="true">↑</span></button></div></div>
+          </form>
+        </section>
+        <p class="tutor-footnote">For syllabus or industry-specific answers, add your class / degree, board / exam, sector, role, or country/region in context. Time Coach uses your saved focus sessions. AI can make mistakes; verify important details. Microphone input depends on browser support and permission.</p>
+      </main>
+    </div>
+    <script src="auth-client.js"></script>
+    <script src="tutor.js"></script>
+  </body>
+</html>

@@ -19,7 +19,7 @@ override the SQLite path. Setting `DATABASE_URL` selects PostgreSQL instead.
 The default configuration is local and single-user. Setting `AUTH_ENABLED=true`
 enables hosted accounts with hashed passwords, expiring server-side sessions,
 CSRF-protected mutations, and per-user ownership on tasks and study sessions.
-The first account requires `AUTH_BOOTSTRAP_TOKEN` and adopts legacy unowned data;
+The first account can register directly and adopts legacy unowned data;
 later accounts receive separate data. MCP tools are disabled in authenticated
 mode because the stdio server has no browser account context.
 Database initialization applies unapplied files from `app/database/migrations/`

@@ -14,7 +14,12 @@ if (!authPage) {
       if (state.authenticated) {
         window.studyPilotCsrfToken = state.csrf_token;
         const email = document.querySelector("#account-email");
-        if (email) email.textContent = state.user.email;
+        if (email) {
+          const displayName = state.user.full_name || state.user.email;
+          email.textContent = displayName;
+          email.title = state.user.email;
+          email.setAttribute("aria-label", `Signed in as ${displayName}`);
+        }
         document.querySelectorAll(".account-privacy").forEach((item) => item.hidden = false);
       }
       return true;

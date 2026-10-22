@@ -12,7 +12,6 @@ LLM_BASE_URL = os.getenv("LLM_BASE_URL", "").rstrip("/")
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 LLM_MODEL = os.getenv("LLM_MODEL", "")
 AUTH_ENABLED = os.getenv("AUTH_ENABLED", "false").strip().lower() in {"1", "true", "yes"}
-AUTH_BOOTSTRAP_TOKEN = os.getenv("AUTH_BOOTSTRAP_TOKEN", "")
 AUTH_ALLOW_REGISTRATION = os.getenv("AUTH_ALLOW_REGISTRATION", "true").strip().lower() in {
     "1", "true", "yes"
 }

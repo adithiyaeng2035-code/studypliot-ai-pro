@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.ai.assistant import answer_question
+from app.ai.assistant import answer_question, tutor_chat
 from app.ai.doubt_solver import solve_doubt
 from app.ai.llm_client import AIProviderNotConfigured, is_configured
 from app.ai.progress_analysis import analyze_progress
@@ -44,7 +44,11 @@ from app.services.auth_service import (
 )
 from app.services.progress_service import get_progress
 from app.services.study_planner import create_study_plan
-from app.services.study_session_service import create_study_session, list_study_sessions
+from app.services.study_session_service import (
+    create_study_session,
+    get_focus_time_analysis,
+    list_study_sessions,
+)
 from app.services.task_service import (
     count_tasks,
     create_task,
@@ -81,6 +85,25 @@ class AssistantQuestion(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     message: str = Field(min_length=1, max_length=4000)
+
+
+class TutorTurn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=4000)
+
+
+class TutorChatQuestion(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    message: str = Field(min_length=1, max_length=4000)
+    history: list[TutorTurn] = Field(default_factory=list, max_length=8)
+    study_context: str = Field(default="", max_length=500)
+    mode: Literal[
+        "general", "learn", "exam_prep", "industry", "writing", "coding",
+        "planning", "brainstorm", "time_coach",
+    ] = "general"
 
 
 class DoubtQuestion(BaseModel):
@@ -171,8 +194,7 @@ class AuthRegister(BaseModel):
 
     email: str = Field(min_length=3, max_length=254)
     password: str = Field(min_length=12, max_length=128)
-    full_name: str = Field(default="", max_length=120)
-    bootstrap_token: str = Field(default="", max_length=256)
+    full_name: str = Field(min_length=1, max_length=120)
 
 
 class AuthLogin(BaseModel):
@@ -283,7 +305,6 @@ def create_app(
                 email=payload.email,
                 password=payload.password,
                 full_name=payload.full_name,
-                bootstrap_token=payload.bootstrap_token,
             )
         except ValueError as error:
             raise HTTPException(status_code=400, detail=str(error)) from error
@@ -647,6 +668,29 @@ def create_app(
         try:
             return answer_question(
                 app_database, payload.message, user_id=request_user_id(request)
+            )
+        except ValueError as error:
+            raise HTTPException(status_code=400, detail=str(error)) from error
+        except RuntimeError as error:
+            raise HTTPException(status_code=502, detail=str(error)) from error
+
+    @application.post("/api/tutor/chat")
+    def chat_with_tutor(payload: TutorChatQuestion, request: Request) -> dict:
+        try:
+            history = [turn.model_dump() for turn in payload.history]
+            focus_summary = (
+                get_focus_time_analysis(
+                    app_database, user_id=request_user_id(request)
+                )
+                if payload.mode == "time_coach" and is_configured()
+                else None
+            )
+            return tutor_chat(
+                payload.message,
+                history,
+                payload.mode,
+                payload.study_context,
+                focus_summary,
             )
         except ValueError as error:
             raise HTTPException(status_code=400, detail=str(error)) from error

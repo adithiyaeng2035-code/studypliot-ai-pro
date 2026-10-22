@@ -15,7 +15,6 @@ appropriate:
 | --- | --- |
 | `DATABASE_URL` | Private PostgreSQL connection URL from your database provider |
 | `AUTH_ENABLED` | `true` |
-| `AUTH_BOOTSTRAP_TOKEN` | A long, randomly generated secret; keep it out of source control |
 | `AUTH_ALLOW_REGISTRATION` | `true` while users may create accounts; set to `false` to close registration later |
 | `AUTH_COOKIE_SECURE` | `true` |
 
@@ -33,11 +32,9 @@ this repository or expose them in a `NEXT_PUBLIC_` variable.
    make a production deployment before PostgreSQL and authentication are set.
 4. Deploy a Preview first and check the home page, `/api/health`, registration,
    sign-in, and task persistence across requests.
-5. Deploy to Production and open the URL Vercel assigns. Enter the bootstrap
-   token on the registration page only when creating the first account. After
-   the first account is created, remove `AUTH_BOOTSTRAP_TOKEN` from Vercel if
-   you do not need it; leave registration enabled only if new signups are
-   intended.
+5. Deploy to Production and open the URL Vercel assigns. Leave registration
+   enabled only while new signups are intended; set
+   `AUTH_ALLOW_REGISTRATION=false` to close it after account creation.
 
 Vercel deployment instructions can change; see the official
 [FastAPI deployment guide](https://vercel.com/docs/frameworks/backend/fastapi)

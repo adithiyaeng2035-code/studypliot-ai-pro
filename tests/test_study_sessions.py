@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
@@ -8,6 +8,7 @@ from app.database.db import Database
 from app.services.progress_service import get_progress_analysis_context
 from app.services.study_session_service import (
     create_study_session,
+    get_focus_time_analysis,
     list_study_sessions,
 )
 from app.services.task_service import create_task, delete_task
@@ -115,3 +116,36 @@ def test_study_session_api_validation_history_and_progress_context(tmp_path):
     ).status_code == 422
     assert get_progress_analysis_context(database)["focus_sessions_in_last_30_days"] == 1
     assert get_progress_analysis_context(database)["focus_minutes_in_last_30_days"] == 25
+
+
+def test_focus_time_analysis_returns_recent_daily_subject_and_streak_totals(tmp_path):
+    database = make_database(tmp_path)
+    today = date(2026, 10, 22)
+
+    def save(day, subject, minutes):
+        completed = datetime.combine(day, datetime.min.time(), tzinfo=timezone.utc) + timedelta(hours=10)
+        create_study_session(
+            database,
+            make_session_values(
+                subject=subject,
+                duration_minutes=minutes,
+                started_at=(completed - timedelta(minutes=minutes)).isoformat(),
+                completed_at=completed.isoformat(),
+            ),
+        )
+
+    save(today - timedelta(days=1), "Mathematics", 35)
+    save(today, "Physics", 25)
+    save(today - timedelta(days=10), "Mathematics", 30)
+
+    result = get_focus_time_analysis(database, today=today)
+
+    assert result["last_7_days"]["minutes"] == 60
+    assert result["last_7_days"]["sessions"] == 2
+    assert result["last_30_days"]["minutes"] == 90
+    assert result["last_30_days"]["active_days"] == 3
+    assert result["last_30_days"]["current_streak_days"] == 2
+    assert result["last_30_days"]["by_subject"] == [
+        {"subject": "Mathematics", "sessions": 2, "minutes": 65},
+        {"subject": "Physics", "sessions": 1, "minutes": 25},
+    ]

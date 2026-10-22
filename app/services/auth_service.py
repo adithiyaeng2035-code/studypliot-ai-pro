@@ -1,7 +1,6 @@
 """Password authentication and server-side browser sessions."""
 
 import hashlib
-import hmac
 import re
 import secrets
 from datetime import datetime, timedelta, timezone
@@ -9,7 +8,7 @@ from typing import Any
 
 from pwdlib import PasswordHash
 
-from app.config import AUTH_ALLOW_REGISTRATION, AUTH_BOOTSTRAP_TOKEN
+from app.config import AUTH_ALLOW_REGISTRATION
 from app.database.db import Database
 
 SESSION_LIFETIME = timedelta(hours=12)
@@ -37,25 +36,22 @@ def register_user(
     email: str,
     password: str,
     full_name: str,
-    bootstrap_token: str,
 ) -> dict[str, Any]:
     normalized_email = normalize_email(email)
     if len(password) < 12:
         raise ValueError("password must be at least 12 characters")
     if len(password) > 128:
         raise ValueError("password must be 128 characters or fewer")
-    if len(full_name) > 120:
+    normalized_name = full_name.strip()
+    if not normalized_name:
+        raise ValueError("student name is required")
+    if len(normalized_name) > 120:
         raise ValueError("name must be 120 characters or fewer")
 
     now = datetime.now(timezone.utc).isoformat()
     with database.session() as connection:
         user_count = connection.execute("SELECT COUNT(*) AS total FROM users").fetchone()["total"]
-        if user_count == 0:
-            if not AUTH_BOOTSTRAP_TOKEN or not hmac.compare_digest(
-                bootstrap_token, AUTH_BOOTSTRAP_TOKEN
-            ):
-                raise PermissionError("valid initial-account setup token required")
-        elif not AUTH_ALLOW_REGISTRATION:
+        if not AUTH_ALLOW_REGISTRATION:
             raise PermissionError("new account registration is disabled")
 
         password_hash = PASSWORD_HASHER.hash(password)
@@ -65,11 +61,11 @@ def register_user(
             if database.is_postgres:
                 user_id = connection.execute(
                     insert + " RETURNING id",
-                    (normalized_email, full_name.strip(), password_hash, now),
+                    (normalized_email, normalized_name, password_hash, now),
                 ).fetchone()["id"]
             else:
                 user_id = connection.execute(
-                    insert, (normalized_email, full_name.strip(), password_hash, now)
+                insert, (normalized_email, normalized_name, password_hash, now)
                 ).lastrowid
         except Exception as error:
             if "unique" in str(error).lower() or "duplicate key" in str(error).lower():
@@ -81,7 +77,7 @@ def register_user(
             connection.execute(
                 "UPDATE study_sessions SET user_id = ? WHERE user_id IS NULL", (user_id,)
             )
-        return {"id": int(user_id), "email": normalized_email, "full_name": full_name.strip()}
+        return {"id": int(user_id), "email": normalized_email, "full_name": normalized_name}
 
 
 def authenticate_user(

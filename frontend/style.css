@@ -6,10 +6,10 @@
   --purple-light: #f0edff;
   --line: #ececf3;
   --surface: #fff;
-  --page: #f7f8fc;
+  --page: #f1effb;
   font-family: "Segoe UI", sans-serif;
   color: var(--ink);
-  background: var(--page);
+  background: linear-gradient(125deg, #edf4ff 0%, #f3efff 48%, #edf8f5 100%);
 }
 
 * { box-sizing: border-box; }
