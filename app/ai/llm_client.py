@@ -7,11 +7,14 @@ from urllib.request import Request, urlopen
 
 from app.config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
 
-REQUEST_TIMEOUT_SECONDS = 30
+# Local models can take longer to load and generate their first response than
+# hosted providers. Give the configured OpenAI-compatible endpoint up to two minutes.
+REQUEST_TIMEOUT_SECONDS = 120
 MAX_SYSTEM_PROMPT_CHARS = 30_000
 MAX_USER_PROMPT_CHARS = 50_000
 MAX_RESPONSE_BYTES = 2_000_000
-MAX_COMPLETION_TOKENS = 4096
+# Keep answers bounded so small local models can return useful explanations promptly.
+MAX_COMPLETION_TOKENS = 768
 
 
 class AIProviderNotConfigured(RuntimeError):

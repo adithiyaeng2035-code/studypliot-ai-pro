@@ -38,7 +38,7 @@ def test_openai_compatible_chat_uses_json_mode_and_bearer_key(monkeypatch):
     assert request.get_header("Authorization") == "Bearer test-secret"
     assert json.loads(request.data)["response_format"] == {"type": "json_object"}
     assert json.loads(request.data)["model"] == "gpt-4o-mini"
-    assert captured["timeout"] == 30
+    assert captured["timeout"] == 120
     assert answer == '{"answer":"A semiconductor controls conduction."}'
 
 

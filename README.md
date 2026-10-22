@@ -138,7 +138,9 @@ be undone; export a backup first if you want to keep a copy.
 - Run the MCP tool server with `python -m app.mcp.server` after installing
   requirements.
 
-### Enable the OpenAI chatbot and AI features
+### Enable a chatbot model and AI features
+
+For a local Ollama model, start Ollama and run the run-local-llm.ps1 script from PowerShell. The launcher uses llama3.2:3b and opens the Doubt Solver page.
 
 For local development on Windows, run `.\run-openai.ps1` from PowerShell.
 It asks for your API key without displaying it, sets the OpenAI endpoint and
