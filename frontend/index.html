@@ -103,6 +103,10 @@
               </div>
               <label class="description-label"><span>Description <em>(optional)</em></span><textarea name="description" rows="2" maxlength="2000" placeholder="Add a note to help you get started"></textarea></label>
             </form>
+            <div class="task-list-filters" role="search" aria-label="Find tasks">
+              <label><span>Search tasks</span><input id="task-search" type="search" maxlength="100" placeholder="Title, subject, or description"></label>
+              <label><span>Filter by subject</span><input id="task-subject-filter" type="search" maxlength="100" placeholder="e.g. Biology"></label>
+            </div>
             <ul id="task-list" class="task-list" aria-live="polite"><li class="empty-state">Loading your tasksâ€¦</li></ul>
             <div class="pagination" aria-label="Task pages">
               <span id="task-page-summary" class="page-summary">Loading tasksâ€¦</span>

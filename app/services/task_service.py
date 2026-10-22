@@ -15,24 +15,42 @@ def _task_dict(row: Any) -> dict[str, Any]:
     return task
 
 
-def _status_filter(status: str) -> str:
+def _task_filters(
+    status: str, *, search: str = "", subject: str = "", user_id: int | None = None
+) -> tuple[str, list[Any]]:
     if status not in {"all", "open", "completed"}:
         raise ValueError("status must be all, open, or completed")
+    conditions: list[str] = []
+    parameters: list[Any] = []
     if status == "open":
-        return " WHERE completed = 0"
-    if status == "completed":
-        return " WHERE completed = 1"
-    return ""
+        conditions.append("completed = 0")
+    elif status == "completed":
+        conditions.append("completed = 1")
+    if user_id is not None:
+        conditions.append("user_id = ?")
+        parameters.append(user_id)
+    normalized_search = search.strip()
+    if normalized_search:
+        conditions.append(
+            "(LOWER(title) LIKE LOWER(?) OR LOWER(subject) LIKE LOWER(?) "
+            "OR LOWER(description) LIKE LOWER(?))"
+        )
+        pattern = f"%{normalized_search}%"
+        parameters.extend((pattern, pattern, pattern))
+    normalized_subject = subject.strip()
+    if normalized_subject:
+        conditions.append("LOWER(subject) LIKE LOWER(?)")
+        parameters.append(f"%{normalized_subject}%")
+    return (" WHERE " + " AND ".join(conditions) if conditions else "", parameters)
 
 
 def count_tasks(
-    database: Database, *, status: str = "all", user_id: int | None = None
+    database: Database, *, status: str = "all", search: str = "", subject: str = "",
+    user_id: int | None = None,
 ) -> int:
-    where = _status_filter(status)
-    parameters: tuple[Any, ...] = ()
-    if user_id is not None:
-        where += (" AND " if where else " WHERE ") + "user_id = ?"
-        parameters = (user_id,)
+    where, parameters = _task_filters(
+        status, search=search, subject=subject, user_id=user_id
+    )
     with database.session() as connection:
         return connection.execute(
             f"SELECT COUNT(*) AS total FROM tasks{where}", parameters
@@ -41,17 +59,15 @@ def count_tasks(
 
 def list_tasks(
     database: Database, *, status: str = "all", limit: int = 50, offset: int = 0,
-    user_id: int | None = None,
+    search: str = "", subject: str = "", user_id: int | None = None,
 ) -> list[dict[str, Any]]:
     if not 1 <= limit <= 100:
         raise ValueError("limit must be between 1 and 100")
     if offset < 0:
         raise ValueError("offset must not be negative")
-    where = _status_filter(status)
-    parameters: list[Any] = []
-    if user_id is not None:
-        where += (" AND " if where else " WHERE ") + "user_id = ?"
-        parameters.append(user_id)
+    where, parameters = _task_filters(
+        status, search=search, subject=subject, user_id=user_id
+    )
     query = (
         "SELECT * FROM tasks"
         + where

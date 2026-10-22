@@ -4,7 +4,10 @@ const filter = document.querySelector("#task-filter");
 const taskPageSummary = document.querySelector("#task-page-summary");
 const previousPage = document.querySelector("#previous-page");
 const nextPage = document.querySelector("#next-page");
+const taskSearch = document.querySelector("#task-search");
+const taskSubjectFilter = document.querySelector("#task-subject-filter");
 let currentPage = 1;
+let taskFilterTimer = null;
 let calendarAnchor = new Date();
 let calendarView = "week";
 
@@ -487,7 +490,14 @@ document.querySelector("#backup-restore-form").addEventListener("submit", async 
 });
 
 async function loadTasks() {
-  const result = await api(`/tasks?status=${filter.value}&page=${currentPage}&page_size=50`);
+  const parameters = new URLSearchParams({
+    status: filter.value,
+    page: String(currentPage),
+    page_size: "50",
+  });
+  if (taskSearch.value.trim()) parameters.set("search", taskSearch.value.trim());
+  if (taskSubjectFilter.value.trim()) parameters.set("subject", taskSubjectFilter.value.trim());
+  const result = await api(`/tasks?${parameters.toString()}`);
   currentPage = result.page;
   taskPageSummary.textContent = result.total
     ? `Showing ${(result.page - 1) * result.page_size + 1}–${Math.min(result.page * result.page_size, result.total)} of ${result.total}`
@@ -496,7 +506,11 @@ async function loadTasks() {
   nextPage.disabled = result.page >= result.pages;
   const tasks = result.items;
   if (!tasks.length) {
-    taskList.innerHTML = `<li class="empty-state">${filter.value === "completed" ? "No completed tasks yet." : "Nothing here yet. Add a task above to get started."}</li>`;
+    const hasTaskFilters = taskSearch.value.trim() || taskSubjectFilter.value.trim();
+    const emptyMessage = hasTaskFilters
+      ? "No tasks match those filters. Try a different search or subject."
+      : filter.value === "completed" ? "No completed tasks yet." : "Nothing here yet. Add a task above to get started.";
+    taskList.innerHTML = `<li class="empty-state">${emptyMessage}</li>`;
     return;
   }
   taskList.innerHTML = tasks.map((task) => `
@@ -588,6 +602,17 @@ filter.addEventListener("change", () => {
   currentPage = 1;
   loadTasks().catch((error) => showNotice(error.message));
 });
+
+function scheduleTaskFilterUpdate() {
+  window.clearTimeout(taskFilterTimer);
+  currentPage = 1;
+  taskFilterTimer = window.setTimeout(() => {
+    loadTasks().catch((error) => showNotice(error.message));
+  }, 250);
+}
+
+taskSearch.addEventListener("input", scheduleTaskFilterUpdate);
+taskSubjectFilter.addEventListener("input", scheduleTaskFilterUpdate);
 
 const recurrenceSelect = document.querySelector("#task-recurrence");
 const recurrenceUntilLabel = document.querySelector("#recurrence-until-label");

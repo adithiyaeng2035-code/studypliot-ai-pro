@@ -96,6 +96,40 @@ def test_api_serves_ui_and_validates_task_requests(tmp_path):
     assert client.delete(f"/api/tasks/{task_id}").status_code == 204
 
 
+def test_task_search_and_subject_filter_are_case_insensitive_and_paginated(tmp_path):
+    database = new_database(tmp_path)
+    first = create_task(
+        database,
+        {"title": "Factor quadratics", "subject": "Mathematics", "description": "Practice"},
+    )
+    second = create_task(
+        database,
+        {"title": "Revision notebook", "subject": "Mathematics", "description": "Factor review"},
+    )
+    create_task(
+        database,
+        {"title": "Factor lab", "subject": "Chemistry", "description": "Practice"},
+    )
+    update_task(database, second["id"], {"completed": True})
+    client = TestClient(create_app(database))
+
+    first_page = client.get(
+        "/api/tasks?search=FACTOR&subject=math&page=1&page_size=1"
+    ).json()
+    second_page = client.get(
+        "/api/tasks?search=factor&subject=MATHEMATICS&page=2&page_size=1"
+    ).json()
+
+    assert first_page["total"] == 2
+    assert first_page["pages"] == 2
+    assert first_page["items"][0]["id"] == first["id"]
+    assert second_page["items"][0]["id"] == second["id"]
+    assert client.get(
+        "/api/tasks?status=completed&search=factor&subject=math"
+    ).json()["total"] == 1
+    assert client.get(f"/api/tasks?search={'x' * 101}").status_code == 422
+
+
 def test_deadline_endpoint_accepts_bounded_window(tmp_path):
     client = TestClient(create_app(new_database(tmp_path)))
     response = client.get("/api/deadlines?days=91")

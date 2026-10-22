@@ -98,6 +98,8 @@ be undone; export a backup first if you want to keep a copy.
 - Browse large task collections with server-side pagination (50 per page, up to
   100 per API request); planner and deadline panels return bounded task samples
   while retaining accurate totals.
+- Search task titles, subjects, and descriptions, then narrow the paginated list
+  by subject or task status.
 - Assign a subject, due date, description, and estimated study duration.
 - Run a pauseable focus timer, optionally link it to an open task, and review
   persisted study-session history. Actual focus minutes appear in the dashboard

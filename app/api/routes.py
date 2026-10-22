@@ -442,17 +442,22 @@ def create_app(
     def get_tasks(
         request: Request,
         status: Literal["all", "open", "completed"] = "all",
+        search: str = Query(default="", max_length=100),
+        subject: str = Query(default="", max_length=100),
         page: int = Query(default=1, ge=1),
         page_size: int = Query(default=50, ge=1, le=100),
     ) -> dict:
         user_id = request_user_id(request)
-        total = count_tasks(app_database, status=status, user_id=user_id)
+        total = count_tasks(
+            app_database, status=status, search=search, subject=subject, user_id=user_id
+        )
         pages = max(1, (total + page_size - 1) // page_size)
         page = min(page, pages)
         return {
             "items": list_tasks(
                 app_database, status=status, limit=page_size,
-                offset=(page - 1) * page_size, user_id=user_id,
+                offset=(page - 1) * page_size, search=search, subject=subject,
+                user_id=user_id,
             ),
             "total": total,
             "page": page,
