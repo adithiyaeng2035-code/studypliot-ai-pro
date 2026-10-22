@@ -7,7 +7,9 @@ import uvicorn
 
 def main() -> None:
     port = int(os.getenv("PORT", "8000"))
-    uvicorn.run("app.api.routes:app", host="127.0.0.1", port=port, reload=False)
+    # Cloud hosts route traffic to the container's network interface, so bind
+    # on all interfaces instead of loopback.
+    uvicorn.run("app.api.routes:app", host="0.0.0.0", port=port, reload=False)
 
 
 if __name__ == "__main__":
