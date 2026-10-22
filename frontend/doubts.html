@@ -1,0 +1,132 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f8fc">
+    <title>Doubt Solver | StudyPilot</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="doubts.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="StudyPilot home"><span class="brand-mark">S</span> StudyPilot</a>
+        <p class="nav-label">Workspace</p>
+        <nav aria-label="Main navigation">
+          <a class="nav-link" href="/#dashboard">â–¦ <span>Overview</span></a>
+          <a class="nav-link" href="/#tasks">âœ“ <span>My tasks</span></a>
+          <a class="nav-link" href="/#plan">â—· <span>Study plan</span></a>
+          <a class="nav-link" href="planner.html">âœ¦ <span>Plan my studies</span></a>
+          <a class="nav-link active" href="doubts.html" aria-current="page">âœ¦ <span>Ask a doubt</span></a>
+        </nav>
+        <div class="account-box"><span id="account-email"></span><button id="sign-out" type="button">Sign out</button><details class="account-privacy" hidden><summary>Privacy &amp; account</summary><p>Questions, goals, and schedule details you submit to AI features are sent to this app’s configured AI provider. Progress reviews send aggregated progress and subject totals. Check that provider’s privacy policy before sharing sensitive information.</p><button class="delete-account" id="delete-account" type="button">Delete account and data</button></details></div>
+        <div class="sidebar-note">
+          <span class="note-icon">âœ¦</span>
+          <strong>Curiosity moves you forward.</strong>
+          <p>Ask clearly, learn the idea, then check your understanding.</p>
+        </div>
+        <span class="sidebar-footer">Made for your next big goal</span>
+      </aside>
+
+      <main class="main-content doubt-main">
+        <header class="doubt-header">
+          <a class="back-link" href="/#dashboard">â† Back to overview</a>
+          <span class="eyebrow">STUDY SUPPORT</span>
+          <h1>Let's work through it.</h1>
+          <p class="intro">Share what you're stuck on. StudyPilot will explain the idea, break down the reasoning, and point out concepts to review.</p>
+        </header>
+
+        <div id="provider-notice" class="provider-notice" role="status" hidden></div>
+        <div id="doubt-error" class="notice" role="alert" hidden></div>
+
+        <div class="doubt-layout">
+          <section class="panel doubt-form-panel">
+            <div class="panel-heading">
+              <div><span class="eyebrow">YOUR QUESTION</span><h2>What would you like help with?</h2></div>
+              <span class="soft-icon">âœŽ</span>
+            </div>
+            <p class="panel-subtitle">Works across subjects. Include your attempt or the exact step that feels unclear.</p>
+
+            <form id="doubt-form">
+              <label class="doubt-field">
+                <span>Subject <em>required</em></span>
+                <input name="subject" list="subject-options" maxlength="100" placeholder="e.g. Mathematics, physics, history, programming" required>
+                <datalist id="subject-options">
+                  <option value="Mathematics"></option><option value="Physics"></option><option value="Chemistry"></option>
+                  <option value="Biology"></option><option value="Computer Science"></option><option value="Programming"></option>
+                  <option value="Engineering Mathematics"></option><option value="Electrical Engineering"></option>
+                  <option value="Mechanical Engineering"></option><option value="Civil Engineering"></option>
+                  <option value="Electronics and Communication Engineering"></option><option value="Computer Engineering"></option>
+                  <option value="Data Science"></option><option value="Artificial Intelligence"></option>
+                  <option value="History"></option><option value="Geography"></option><option value="English"></option>
+                  <option value="Economics"></option><option value="Business Studies"></option><option value="Other"></option>
+                </datalist>
+              </label>
+              <label class="doubt-field">
+                <span>Your doubt <em>required</em></span>
+                <textarea name="question" rows="6" maxlength="5000" placeholder="Describe the question or concept you're stuck onâ€¦" required></textarea>
+              </label>
+              <div class="doubt-field-row">
+                <label class="doubt-field">
+                  <span>Study level <em>optional</em></span>
+                  <select name="level">
+                    <option value="">Choose a level</option>
+                    <option>Middle school</option>
+                    <option>High school</option>
+                    <option>B.Tech</option>
+                    <option>M.Tech</option>
+                    <option>Other undergraduate</option>
+                    <option>Other postgraduate</option>
+                    <option>Self-study</option>
+                  </select>
+                </label>
+              </div>
+              <label class="doubt-field">
+                <span>What have you tried? <em>optional</em></span>
+                <textarea name="context" rows="3" maxlength="2000" placeholder="Share your working, notes, or where you got stuck"></textarea>
+              </label>
+              <button class="primary-button solve-button" type="submit">
+                <span class="button-label">Explain and analyze</span><span aria-hidden="true">â†’</span>
+              </button>
+            </form>
+            <p class="privacy-note">Your question is sent to the AI provider configured for this app. Avoid including personal or sensitive information.</p>
+          </section>
+
+          <section id="doubt-result" class="panel result-panel" aria-live="polite" hidden>
+            <div class="result-heading">
+              <div><span class="eyebrow">YOUR EXPLANATION</span><h2>Let's make it click.</h2></div>
+              <span id="difficulty-badge" class="difficulty-badge"></span>
+            </div>
+            <section class="result-section">
+              <h3>Short answer</h3>
+              <p id="answer-text"></p>
+            </section>
+            <section class="result-section">
+              <h3>Step by step</h3>
+              <ol id="steps-list"></ol>
+            </section>
+            <section class="result-section">
+              <h3>Concepts to know</h3>
+              <ul id="concepts-list" class="concept-list"></ul>
+            </section>
+            <section class="analysis-box">
+              <span class="eyebrow">DOUBT ANALYSIS</span>
+              <p id="analysis-text"></p>
+              <div id="misconception-wrap" hidden>
+                <h3>Possible misconception</h3><p id="misconception-text"></p>
+              </div>
+            </section>
+            <section id="followup-wrap" class="followup-box" hidden>
+              <strong>Check your understanding</strong>
+              <p id="followup-text"></p>
+            </section>
+            <p class="accuracy-note">Use this as a learning aid and verify important answers against your course materials.</p>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="auth-client.js"></script>
+    <script src="doubts.js"></script>
+  </body>
+</html>

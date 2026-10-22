@@ -1,0 +1,78 @@
+const form = document.querySelector("#doubt-form");
+const providerNotice = document.querySelector("#provider-notice");
+const errorNotice = document.querySelector("#doubt-error");
+const resultPanel = document.querySelector("#doubt-result");
+
+function setList(selector, values) {
+  const list = document.querySelector(selector);
+  list.replaceChildren();
+  for (const value of values) {
+    const item = document.createElement("li");
+    item.textContent = value;
+    list.append(item);
+  }
+}
+
+async function checkAIStatus() {
+  try {
+    const response = await window.studyPilotFetch("/api/ai/status");
+    if (!response.ok) throw new Error(`Status check failed (${response.status})`);
+    const status = await response.json();
+    if (!status.configured) {
+      providerNotice.hidden = false;
+      providerNotice.textContent =
+        "AI doubt solving is not configured yet. Set LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL in the environment, then restart StudyPilot. The question form will work once a provider is configured.";
+    }
+  } catch (error) {
+    providerNotice.hidden = false;
+    providerNotice.textContent = `Could not check AI setup: ${error.message}`;
+  }
+}
+
+function showResult(result) {
+  document.querySelector("#difficulty-badge").textContent = result.difficulty;
+  document.querySelector("#difficulty-badge").className = `difficulty-badge ${result.difficulty}`;
+  document.querySelector("#answer-text").textContent = result.answer;
+  document.querySelector("#analysis-text").textContent = result.analysis;
+  setList("#steps-list", result.steps);
+  setList("#concepts-list", result.concepts);
+
+  const misconceptionWrap = document.querySelector("#misconception-wrap");
+  misconceptionWrap.hidden = !result.misconception;
+  document.querySelector("#misconception-text").textContent = result.misconception;
+
+  const followupWrap = document.querySelector("#followup-wrap");
+  followupWrap.hidden = !result.follow_up;
+  document.querySelector("#followup-text").textContent = result.follow_up;
+  resultPanel.hidden = false;
+}
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  errorNotice.hidden = true;
+  resultPanel.hidden = true;
+  const button = form.querySelector("button[type=submit]");
+  const buttonLabel = button.querySelector(".button-label");
+  button.disabled = true;
+  buttonLabel.textContent = "Working through your question…";
+
+  const values = Object.fromEntries(new FormData(form));
+  try {
+    const response = await window.studyPilotFetch("/api/doubts/solve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.detail || `Request failed (${response.status})`);
+    showResult(result);
+  } catch (error) {
+    errorNotice.textContent = `Couldn't analyze this doubt: ${error.message}`;
+    errorNotice.hidden = false;
+  } finally {
+    button.disabled = false;
+    buttonLabel.textContent = "Explain and analyze";
+  }
+});
+
+checkAIStatus();

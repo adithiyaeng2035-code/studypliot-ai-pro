@@ -1,0 +1,122 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f8fc">
+    <title>AI Study Planner | StudyPilot</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="planner.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="StudyPilot home"><span class="brand-mark">S</span> StudyPilot</a>
+        <p class="nav-label">Workspace</p>
+        <nav aria-label="Main navigation">
+          <a class="nav-link" href="/#dashboard">â–¦ <span>Overview</span></a>
+          <a class="nav-link" href="/#tasks">âœ“ <span>My tasks</span></a>
+          <a class="nav-link" href="/#plan">â—· <span>Study plan</span></a>
+          <a class="nav-link active" href="planner.html" aria-current="page">âœ¦ <span>Plan my studies</span></a>
+          <a class="nav-link" href="doubts.html">? <span>Ask a doubt</span></a>
+        </nav>
+        <div class="account-box"><span id="account-email"></span><button id="sign-out" type="button">Sign out</button><details class="account-privacy" hidden><summary>Privacy &amp; account</summary><p>Questions, goals, and schedule details you submit to AI features are sent to this app’s configured AI provider. Progress reviews send aggregated progress and subject totals. Check that provider’s privacy policy before sharing sensitive information.</p><button class="delete-account" id="delete-account" type="button">Delete account and data</button></details></div>
+        <div class="sidebar-note">
+          <span class="note-icon">âœ¦</span>
+          <strong>Plan, review, then begin.</strong>
+          <p>Your study sessions are added only after you approve the draft.</p>
+        </div>
+        <span class="sidebar-footer">Made for your next big goal</span>
+      </aside>
+
+      <main class="main-content planner-main">
+        <header class="planner-header">
+          <a class="back-link" href="/#dashboard">â† Back to overview</a>
+          <span class="eyebrow">AI STUDY PLANNER</span>
+          <h1>Turn your goal into a plan.</h1>
+          <p class="intro">Share your goal, deadline, and available study time. Review the model's draft before adding any sessions to your tasks.</p>
+        </header>
+
+        <div id="provider-notice" class="provider-notice" role="status" hidden></div>
+        <div id="planner-notice" class="notice" role="alert" hidden></div>
+
+        <section class="panel planner-input-panel">
+          <div class="panel-heading">
+            <div><span class="eyebrow">STEP 1 Â· TELL US YOUR GOAL</span><h2>What are you working toward?</h2></div>
+            <span class="soft-icon">â—·</span>
+          </div>
+          <form id="planner-form" class="planner-form">
+            <label class="planner-field">
+              <span>Goal</span>
+              <input name="goal" maxlength="300" placeholder="e.g. Understand semiconductor basics and solve practice problems" required>
+            </label>
+            <div class="planner-fields-grid">
+              <label class="planner-field">
+                <span>Subject</span>
+                <input name="subject" maxlength="100" placeholder="e.g. Physics" required>
+              </label>
+              <label class="planner-field">
+                <span>Target date</span>
+                <input name="deadline" type="date" required>
+              </label>
+              <label class="planner-field">
+                <span>Study days per week</span>
+                <select name="study_days_per_week">
+                  <option value="2">2 days</option>
+                  <option value="3">3 days</option>
+                  <option value="4">4 days</option>
+                  <option value="5" selected>5 days</option>
+                  <option value="6">6 days</option>
+                  <option value="7">Every day</option>
+                </select>
+              </label>
+              <label class="planner-field">
+                <span>Minutes per study day</span>
+                <input name="minutes_per_day" type="number" min="15" max="240" step="5" value="45" required>
+              </label>
+            </div>
+            <label class="planner-field level-field">
+              <span>Study level <em>optional</em></span>
+              <select name="level">
+                <option value="">Choose a level</option>
+                <option>Middle school</option>
+                <option>High school</option>
+                <option>Undergraduate</option>
+                <option>Graduate</option>
+                <option>Self-study</option>
+              </select>
+            </label>
+            <button class="primary-button planner-generate" type="submit">
+              <span class="button-label">Generate a draft plan</span><span aria-hidden="true">â†’</span>
+            </button>
+          </form>
+          <p class="privacy-note">Your goal and schedule preferences are sent to the configured AI provider. Avoid entering sensitive information.</p>
+        </section>
+
+        <section id="draft-panel" class="panel draft-panel" aria-live="polite" hidden>
+          <div class="draft-header">
+            <div>
+              <span class="eyebrow">STEP 2 Â· REVIEW YOUR DRAFT</span>
+              <h2 id="draft-goal"></h2>
+              <p id="draft-summary" class="panel-subtitle"></p>
+            </div>
+            <span class="draft-badge">Not added yet</span>
+          </div>
+          <div id="draft-sessions" class="draft-sessions"></div>
+          <div class="draft-footer">
+            <p id="draft-totals" class="panel-subtitle"></p>
+            <div class="draft-actions">
+              <button id="discard-draft" class="secondary-button" type="button">Discard draft</button>
+              <button id="approve-draft" class="primary-button" type="button">
+                <span class="button-label">Approve and add tasks</span><span aria-hidden="true">âœ“</span>
+              </button>
+            </div>
+          </div>
+          <p class="privacy-note">Approval creates one task per session. You can later edit or delete those tasks in the dashboard.</p>
+        </section>
+      </main>
+    </div>
+    <script src="auth-client.js"></script>
+    <script src="planner.js"></script>
+  </body>
+</html>

@@ -1,0 +1,211 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f8fc">
+    <title>StudyPilot â€” your study space</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="StudyPilot home"><span class="brand-mark">S</span> StudyPilot</a>
+        <p class="nav-label">Workspace</p>
+        <nav aria-label="Main navigation">
+          <a class="nav-link active" href="#dashboard">â–¦ <span>Overview</span></a>
+          <a class="nav-link" href="#tasks">âœ“ <span>My tasks</span></a>
+          <a class="nav-link" href="#plan">â—· <span>Study plan</span></a>
+          <a class="nav-link" href="planner.html">âœ¦ <span>Plan my studies</span></a>
+          <a class="nav-link" href="doubts.html">âœ¦ <span>Ask a doubt</span></a>
+        </nav>
+        <div class="account-box"><span id="account-email"></span><button id="sign-out" type="button">Sign out</button><details class="account-privacy" hidden><summary>Privacy &amp; account</summary><p>Questions, goals, and schedule details you submit to AI features are sent to this app’s configured AI provider. Progress reviews send aggregated progress and subject totals. Check that provider’s privacy policy before sharing sensitive information.</p><button class="delete-account" id="delete-account" type="button">Delete account and data</button></details></div>
+        <div class="sidebar-note">
+          <span class="note-icon">âœ¦</span>
+          <strong>Small steps add up.</strong>
+          <p>Keep your next study session focused and achievable.</p>
+        </div>
+        <span class="sidebar-footer">Made for your next big goal</span>
+      </aside>
+
+      <main class="main-content" id="dashboard">
+        <header class="topbar">
+          <div><span class="eyebrow">YOUR PERSONAL STUDY SPACE</span><h1>Good to see you.</h1></div>
+          <div class="today-chip"><span class="status-dot"></span> <span id="today-label">Today</span></div>
+        </header>
+        <p class="intro">A clear plan makes every study session count. Here's where you stand.</p>
+        <div id="notice" class="notice" role="status" hidden></div>
+
+        <section class="stats-grid" aria-label="Study progress">
+          <article class="stat-card"><span class="stat-label">Tasks completed</span><strong id="completed-count">â€”</strong><span id="completion-caption" class="stat-caption">Loading progressâ€¦</span></article>
+          <article class="stat-card"><span class="stat-label">Still to do</span><strong id="open-count">â€”</strong><span class="stat-caption">Open study tasks</span></article>
+          <article class="stat-card"><span class="stat-label">Study time logged</span><strong><span id="minutes-count">â€”</span><small> min</small></strong><span id="focus-minutes-caption" class="stat-caption">From focus sessions</span></article>
+          <article class="stat-card"><span class="stat-label">Completion rate</span><strong><span id="completion-rate">â€”</span><small>%</small></strong><span class="stat-caption">You're building momentum</span></article>
+        </section>
+
+        <section class="panel focus-goal-panel" aria-labelledby="focus-goal-title">
+          <div class="focus-goal-main">
+            <div class="panel-heading">
+              <div><span class="eyebrow">A STEADY STUDY RHYTHM</span><h2 id="focus-goal-title">Today's focus goal</h2></div>
+              <label class="goal-picker" for="focus-goal-target"><span>Daily target</span>
+                <select id="focus-goal-target" aria-label="Daily focus goal">
+                  <option value="30">30 min</option><option value="45">45 min</option><option value="60" selected>60 min</option>
+                  <option value="90">90 min</option><option value="120">2 hours</option><option value="180">3 hours</option>
+                </select>
+              </label>
+            </div>
+            <div class="focus-goal-reading"><strong id="focus-goal-today">0 / 60 min</strong><span id="focus-goal-status" role="status" aria-live="polite">Loading today's study time…</span></div>
+            <progress id="focus-goal-progress" max="60" value="0" aria-label="Today's focus goal progress"></progress>
+          </div>
+          <div class="focus-week-wrap">
+            <span class="focus-week-title">Last 7 days</span>
+            <div id="focus-week-chart" class="focus-week-chart" role="group" aria-label="Focus minutes for the last seven days"></div>
+          </div>
+        </section>
+
+        <section class="panel calendar-panel" aria-labelledby="calendar-title">
+          <div class="panel-heading">
+            <div><span class="eyebrow">YOUR SCHEDULE</span><h2 id="calendar-title">Calendar</h2></div>
+            <div class="calendar-controls">
+              <button id="calendar-prev" type="button" aria-label="Previous period">‹</button>
+              <span id="calendar-period" aria-live="polite"></span>
+              <button id="calendar-next" type="button" aria-label="Next period">›</button>
+              <button id="calendar-view-toggle" type="button" aria-pressed="false">Month</button>
+            </div>
+          </div>
+          <div class="calendar-weekdays" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+          <div id="calendar-grid" class="calendar-grid" aria-live="polite"><p class="empty-state">Loading calendar…</p></div>
+          <p class="calendar-legend"><span class="calendar-task-dot"></span> Due task <span class="calendar-session-dot"></span> Focus session</p>
+        </section>
+
+        <div class="content-grid">
+          <section class="panel task-panel" id="tasks">
+            <div class="panel-heading">
+              <div><span class="eyebrow">STAY ON TRACK</span><h2>Your tasks</h2></div>
+              <label class="filter-label" for="task-filter"><span class="sr-only">Filter tasks</span>
+                <select id="task-filter"><option value="all">All tasks</option><option value="open">To do</option><option value="completed">Completed</option></select>
+              </label>
+            </div>
+            <form id="task-form" class="task-form">
+              <div class="form-row">
+                <label class="sr-only" for="task-title">Task title</label>
+                <input id="task-title" name="title" placeholder="What do you need to study?" maxlength="200" required>
+                <button class="primary-button" type="submit">Add task <span aria-hidden="true">+</span></button>
+              </div>
+              <div class="form-details">
+                <label><span>Subject</span><input name="subject" placeholder="e.g. Biology" maxlength="100"></label>
+                <label><span>Due date</span><input name="due_date" type="date"></label>
+                <label><span>Minutes</span><input name="estimated_minutes" type="number" min="1" max="1440" value="30" required></label>
+              </div>
+              <div class="form-recurrence">
+                <label><span>Repeat</span><select name="recurrence_rule" id="task-recurrence"><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label>
+                <label id="recurrence-until-label" hidden><span>Repeat through</span><input name="recurrence_until" type="date" disabled></label>
+              </div>
+              <label class="description-label"><span>Description <em>(optional)</em></span><textarea name="description" rows="2" maxlength="2000" placeholder="Add a note to help you get started"></textarea></label>
+            </form>
+            <ul id="task-list" class="task-list" aria-live="polite"><li class="empty-state">Loading your tasksâ€¦</li></ul>
+            <div class="pagination" aria-label="Task pages">
+              <span id="task-page-summary" class="page-summary">Loading tasksâ€¦</span>
+              <div class="page-buttons">
+                <button id="previous-page" type="button" disabled>Previous</button>
+                <button id="next-page" type="button" disabled>Next</button>
+              </div>
+            </div>
+          </section>
+
+          <div class="right-column">
+            <section class="panel plan-panel" id="plan">
+              <div class="panel-heading">
+                <div><span class="eyebrow">A LITTLE AT A TIME</span><h2>Study plan</h2></div>
+                <span class="soft-icon">â—·</span>
+              </div>
+              <p class="panel-subtitle">Open tasks grouped by their due date.</p>
+              <div id="plan-list" class="plan-list"><p class="empty-state">Building your planâ€¦</p></div>
+            </section>
+            <section class="panel deadlines-panel">
+              <div class="panel-heading">
+                <div><span class="eyebrow">COMING UP</span><h2>Deadlines</h2></div>
+                <span class="soft-icon">âŒ</span>
+              </div>
+              <div id="deadline-list" class="deadline-list"><p class="empty-state">Checking deadlinesâ€¦</p></div>
+            </section>
+            <section class="panel progress-insight-panel">
+              <div class="panel-heading">
+                <div><span class="eyebrow">MODEL-ASSISTED REVIEW</span><h2>Progress insights</h2></div>
+                <span class="soft-icon">âœ¦</span>
+              </div>
+              <p class="panel-subtitle">Ask the configured AI model to review task completion, subject coverage, and deadlines, then suggest practical next steps.</p>
+              <button id="analyze-progress" class="primary-button insight-button" type="button">Analyze my progress <span aria-hidden="true">â†’</span></button>
+              <div id="progress-insight-status" class="insight-status" role="status" aria-live="polite"></div>
+              <div id="progress-insight-result" class="progress-insight-result" hidden>
+                <p id="progress-insight-summary"></p>
+                <section><h3>Strengths</h3><ul id="progress-insight-strengths"></ul></section>
+                <section><h3>Focus areas</h3><ul id="progress-insight-focus"></ul></section>
+                <section><h3>Suggested actions</h3><div id="progress-insight-recommendations"></div></section>
+                <p class="insight-next-step"><strong>Next step:</strong> <span id="progress-insight-next-step"></span></p>
+                <a class="insight-plan-link" href="planner.html">Create a draft study plan</a>
+                <p id="progress-insight-evidence" class="insight-evidence"></p>
+              </div>
+              <p class="insight-privacy">Only aggregated progress and subject totals are sent to the configured AI provider. This is an LLM-based review, not a model trained on your personal history.</p>
+            </section>
+            <section class="panel focus-panel">
+              <div class="panel-heading">
+                <div><span class="eyebrow">FOCUSED STUDY</span><h2>Study session timer</h2></div>
+                <span class="soft-icon">â—·</span>
+              </div>
+              <p class="panel-subtitle">Focus on one subject or task. Completed sessions are saved to your history.</p>
+              <form id="focus-form" class="focus-form">
+                <label><span>Subject</span><input name="subject" maxlength="100" placeholder="e.g. Physics" value="General" required></label>
+                <label><span>Link a task <em>(optional)</em></span><select id="focus-task" name="task_id"><option value="">No linked task</option></select></label>
+                <label><span>Focus time (minutes)</span><input name="duration_minutes" type="number" min="1" max="240" value="25" required></label>
+                <label><span>Session note <em>(optional)</em></span><input name="notes" maxlength="1000" placeholder="What will you focus on?"></label>
+                <div id="focus-clock" class="focus-clock" role="timer" aria-live="off">25:00</div>
+                <div class="focus-actions">
+                  <button id="focus-start" class="primary-button" type="submit">Start focus</button>
+                  <button id="focus-pause" type="button" disabled>Pause</button>
+                  <button id="focus-finish" type="button" disabled>Finish &amp; save</button>
+                </div>
+              </form>
+              <p id="focus-status" class="insight-status" role="status" aria-live="polite"></p>
+              <div class="focus-history">
+                <h3>Recent sessions</h3>
+                <p id="focus-history-summary" class="focus-history-summary"></p>
+                <ul id="focus-history-list"><li class="empty-state">Loading sessionsâ€¦</li></ul>
+              </div>
+            </section>
+            <section class="panel assistant-panel">
+              <div class="assistant-title"><span class="assistant-icon">âœ¦</span><div><span class="eyebrow">STUDY SUPPORT</span><h2>Ask StudyPilot</h2></div></div>
+              <p class="panel-subtitle">Get a suggestion for your next study step.</p>
+              <form id="assistant-form" class="assistant-form">
+                <label class="sr-only" for="assistant-message">Ask a study question</label>
+                <input id="assistant-message" name="message" maxlength="4000" placeholder="What should I focus on today?" required>
+                <button type="submit" aria-label="Ask StudyPilot">â†’</button>
+              </form>
+              <p id="assistant-reply" class="assistant-reply" aria-live="polite"></p>
+            </section>
+            <section class="panel data-export-panel">
+              <div class="panel-heading">
+                <div><span class="eyebrow">YOUR DATA</span><h2>Export &amp; backup</h2></div>
+              </div>
+              <p class="panel-subtitle">Download a spreadsheet of your tasks or a complete backup with task and focus-session history.</p>
+              <div class="export-actions">
+                <a class="export-link" href="/api/exports/tasks.csv">Download tasks CSV</a>
+                <a class="export-link export-link-secondary" href="/api/exports/backup.json">Download full JSON backup</a>
+              </div>
+              <form id="backup-restore-form" class="export-actions">
+                <label class="export-link export-link-secondary" for="backup-file">Choose JSON backup</label>
+                <input id="backup-file" type="file" accept=".json,application/json" required>
+                <button class="export-link" type="submit">Restore backup</button>
+              </form>
+              <p class="panel-subtitle">Restore adds the backup's tasks and focus sessions; it does not replace current data. Restoring the same file again adds duplicates.</p>
+              <p id="backup-restore-status" role="status" aria-live="polite"></p>
+            </section>
+          </div>
+        </div>
+        <footer>StudyPilot <span>Â·</span> Make progress at your pace</footer>
+      </main>
+    </div>
+    <script src="auth-client.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

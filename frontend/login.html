@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f8fc">
+    <title>Sign in | StudyPilot</title>
+    <link rel="stylesheet" href="auth.css">
+  </head>
+  <body>
+    <main class="auth-shell">
+      <a class="brand" href="/login.html"><span class="brand-mark">S</span> StudyPilot</a>
+      <p class="eyebrow">YOUR PRIVATE STUDY SPACE</p>
+      <h1>Welcome to StudyPilot</h1>
+      <p class="intro">Sign in to continue, or create an account to start planning your studies.</p>
+      <p id="auth-status" class="auth-status" role="status" aria-live="polite"></p>
+      <div class="auth-columns">
+        <form id="login-form" class="auth-card">
+          <h2>Sign in</h2>
+          <label>Email<input type="email" name="email" autocomplete="username" maxlength="254" required></label>
+          <label>Password<input type="password" name="password" autocomplete="current-password" maxlength="128" required></label>
+          <button type="submit">Sign in</button>
+        </form>
+        <form id="register-form" class="auth-card">
+          <h2>Create account</h2>
+          <label>Name <span>(optional)</span><input name="full_name" autocomplete="name" maxlength="120"></label>
+          <label>Email<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
+          <label>Password <span>(12 characters or more)</span><input type="password" name="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+          <label>Initial setup token <span>(first account only)</span><input type="password" name="bootstrap_token" autocomplete="off" maxlength="256"></label>
+          <button type="submit">Create account</button>
+        </form>
+      </div>
+      <p class="auth-note">Use a unique password. StudyPilot stores a password hash and uses a protected, expiring browser session.</p>
+    </main>
+    <script src="auth.js"></script>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+.planner-main { max-width: 1120px; }
+.planner-header { margin-bottom: 22px; max-width: 760px; }
+.planner-header h1 { font: 700 clamp(27px, 3.2vw, 36px) "Segoe UI", sans-serif; letter-spacing: -1px; margin: 7px 0 0; }
+.planner-header .intro { line-height: 1.7; margin: 10px 0 0; }
+.planner-input-panel, .draft-panel { margin-bottom: 18px; padding: clamp(18px, 2.5vw, 27px); }
+.planner-form { margin-top: 20px; }
+.planner-fields-grid { display: grid; gap: 13px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.planner-field { color: #575a70; display: grid; font-size: 12px; font-weight: 600; gap: 7px; margin-top: 15px; }
+.planner-field:first-child { margin-top: 0; }
+.planner-fields-grid .planner-field { margin-top: 15px; }
+.planner-field em { color: #a1a3b1; font-size: 10px; font-style: normal; font-weight: 400; }
+.planner-field input, .planner-field select { background: #fff; border: 1px solid #e8e7ef; border-radius: 8px; color: var(--ink); font-size: 12px; font-weight: 400; min-width: 0; outline: none; padding: 11px 12px; width: 100%; }
+.planner-field input::placeholder { color: #a3a6b5; }
+.level-field { max-width: calc(50% - 7px); }
+.planner-generate { align-items: center; display: flex; font-size: 12px; gap: 12px; justify-content: center; margin-top: 20px; min-height: 42px; min-width: 210px; }
+.planner-generate:disabled, .draft-actions button:disabled { cursor: wait; opacity: .65; }
+.draft-panel[hidden] { display: none; }
+.draft-header { align-items: flex-start; display: flex; gap: 15px; justify-content: space-between; }
+.draft-header h2 { font: 700 20px "Segoe UI", sans-serif; margin: 5px 0 0; overflow-wrap: anywhere; }
+.draft-header .panel-subtitle { line-height: 1.65; }
+.draft-badge { background: #fff8e8; border: 1px solid #f2e1b8; border-radius: 18px; color: #806221; flex: 0 0 auto; font-size: 10px; padding: 7px 10px; }
+.draft-sessions { display: grid; gap: 9px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 18px; }
+.draft-session { background: #fafaff; border: 1px solid #efedf8; border-radius: 9px; padding: 13px; }
+.draft-session-date { color: var(--purple); font-size: 10px; font-weight: 700; letter-spacing: .2px; }
+.draft-session h3 { color: #42455a; font: 700 13px "Segoe UI", sans-serif; line-height: 1.5; margin: 7px 0 5px; overflow-wrap: anywhere; }
+.draft-session p { color: #777b8f; font-size: 11px; line-height: 1.6; margin: 0; white-space: pre-wrap; }
+.draft-session-time { color: #85889a; display: block; font-size: 10px; margin-top: 9px; }
+.draft-footer { align-items: center; border-top: 1px solid var(--line); display: flex; gap: 15px; justify-content: space-between; margin-top: 19px; padding-top: 15px; }
+.draft-footer > p { margin: 0; }
+.draft-actions { display: flex; flex: 0 0 auto; gap: 8px; }
+.secondary-button { background: #fff; border: 1px solid var(--line); border-radius: 7px; color: #696c80; cursor: pointer; font-size: 11px; padding: 10px 13px; }
+.draft-actions .primary-button { min-height: 38px; }
+.draft-panel > .privacy-note { border-top: 1px solid #f0f0f5; margin-top: 14px; padding-top: 12px; }
+@media (max-width: 760px) {
+  .planner-main { padding-top: 108px; }
+  .level-field { max-width: none; }
+}
+@media (max-width: 540px) {
+  .planner-fields-grid, .draft-sessions { grid-template-columns: minmax(0, 1fr); }
+  .draft-header, .draft-footer { align-items: stretch; flex-direction: column; }
+  .draft-badge { align-self: flex-start; }
+  .draft-actions { flex-wrap: wrap; }
+  .draft-actions button { flex: 1; }
+}

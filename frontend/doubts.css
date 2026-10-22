@@ -1,0 +1,47 @@
+.doubt-main { max-width: 1280px; }
+.doubt-header { margin-bottom: 23px; max-width: 700px; }
+.back-link { color: #777b91; display: inline-block; font-size: 12px; margin-bottom: 27px; text-decoration: none; }
+.back-link:hover { color: var(--purple); }
+.doubt-header h1 { font: 700 clamp(27px, 3.2vw, 36px) "Segoe UI", sans-serif; letter-spacing: -1px; margin: 7px 0 0; }
+.doubt-header .intro { line-height: 1.7; margin: 10px 0 0; }
+.provider-notice { background: #fff8e8; border: 1px solid #f2e1b8; border-radius: 9px; color: #74561c; font-size: 12px; line-height: 1.65; margin-bottom: 17px; padding: 12px 15px; }
+.doubt-layout { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(300px, .9fr) minmax(0, 1.1fr); }
+.doubt-form-panel, .result-panel { padding: clamp(18px, 2.5vw, 27px); }
+.doubt-form-panel > .panel-subtitle { margin-bottom: 20px; }
+.doubt-field { color: #575a70; display: grid; font-size: 12px; font-weight: 600; gap: 7px; margin-top: 16px; }
+.doubt-field:first-child { margin-top: 0; }
+.doubt-field em { color: #a1a3b1; font-size: 10px; font-style: normal; font-weight: 400; margin-left: 4px; }
+.doubt-field input, .doubt-field textarea, .doubt-field select { background: #fff; border: 1px solid #e8e7ef; border-radius: 8px; color: var(--ink); font-size: 12px; font-weight: 400; min-width: 0; outline: none; padding: 11px 12px; width: 100%; }
+.doubt-field textarea { line-height: 1.65; resize: vertical; }
+.doubt-field input::placeholder, .doubt-field textarea::placeholder { color: #a3a6b5; }
+.doubt-field-row { display: grid; grid-template-columns: minmax(0, 1fr); }
+.solve-button { align-items: center; display: flex; font-size: 12px; justify-content: center; margin-top: 18px; min-height: 42px; width: 100%; }
+.solve-button:disabled { cursor: wait; opacity: .65; }
+.privacy-note, .accuracy-note { color: #9598a8; font-size: 10px; line-height: 1.65; margin: 12px 0 0; }
+.result-panel[hidden] { display: none; }
+.result-heading { align-items: center; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; padding-bottom: 16px; }
+.result-heading h2 { font: 700 21px "Segoe UI", sans-serif; letter-spacing: -.4px; margin: 5px 0 0; }
+.difficulty-badge { background: #f0edff; border-radius: 16px; color: #6651c1; font-size: 10px; font-weight: 600; padding: 7px 10px; text-transform: capitalize; }
+.difficulty-badge.beginner { background: #e8f6ee; color: #318159; }
+.difficulty-badge.advanced { background: #fff0e8; color: #a9592c; }
+.result-section { border-bottom: 1px solid #f0f0f5; padding: 15px 0; }
+.result-section h3, .analysis-box h3 { color: #45485d; font: 700 12px "Segoe UI", sans-serif; margin: 0 0 7px; }
+.result-section p, .analysis-box p, .followup-box p { color: #696c80; font-size: 12px; line-height: 1.75; margin: 0; white-space: pre-wrap; }
+.result-section ol, .result-section ul { color: #696c80; font-size: 12px; line-height: 1.75; margin: 0; padding-left: 20px; }
+.result-section li + li { margin-top: 5px; }
+.concept-list { display: flex; flex-wrap: wrap; gap: 7px; list-style: none; padding: 0 !important; }
+.concept-list li { background: #f5f4fb; border-radius: 15px; color: #68627c; font-size: 10px; padding: 5px 9px; }
+.analysis-box { background: #faf9ff; border: 1px solid #efedf8; border-radius: 9px; margin-top: 15px; padding: 13px; }
+.analysis-box > .eyebrow { display: block; margin-bottom: 7px; }
+.analysis-box h3 { margin-top: 13px; }
+.followup-box { border-left: 3px solid #8e7be3; margin-top: 14px; padding: 2px 0 2px 12px; }
+.followup-box strong { color: #514887; font-size: 11px; }
+.followup-box p { margin-top: 5px; }
+.accuracy-note { margin-top: 14px; }
+@media (max-width: 920px) {
+  .doubt-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .doubt-main { padding-top: 108px; }
+  .back-link { margin-bottom: 21px; }
+}
