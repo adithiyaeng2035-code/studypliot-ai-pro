@@ -40,7 +40,11 @@ a model on personal history or send task descriptions.
 Completed focus sessions are stored separately in `study_sessions`; linking a
 session to a task is optional, and deleting a task keeps the session history.
 The Doubt Solver page calls `POST /api/doubts/solve`; AI provider configuration is
-required, and submitted question content is sent to that provider.
+required, and submitted question content is sent to that provider. Document
+uploads use `POST /api/doubts/analyze-document`; text extraction is bounded by
+file size, page/sheet counts, and prompt length. Extracted PDF pages and workbook
+cells are labeled before being sent to the configured provider. Scanned PDF OCR
+and spreadsheet formula recalculation are not provided.
 The shared AI client validates HTTP(S) provider base URLs, caps prompt and response
 sizes and output tokens, applies a 30-second timeout, and avoids returning raw
 provider error bodies to the browser.

@@ -9,7 +9,16 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any, Literal
 
-from fastapi import FastAPI, HTTPException, Query, Request, Response
+from fastapi import (
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    UploadFile,
+)
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
@@ -41,6 +50,11 @@ from app.services.auth_service import (
 from app.services.backup_service import restore_backup
 from app.services.calendar_service import get_calendar_events
 from app.services.deadline_service import get_deadlines
+from app.services.document_extractor import (
+    MAX_DOCUMENT_BYTES,
+    DocumentExtractionError,
+    extract_document,
+)
 from app.services.progress_service import get_progress
 from app.services.study_planner import create_study_plan
 from app.services.study_session_service import (
@@ -418,6 +432,54 @@ def create_app(
                 level=payload.level,
                 context=payload.context,
             )
+        except ValueError as error:
+            raise HTTPException(status_code=400, detail=str(error)) from error
+        except AIProviderNotConfigured as error:
+            raise HTTPException(status_code=503, detail=str(error)) from error
+        except RuntimeError as error:
+            raise HTTPException(status_code=502, detail=str(error)) from error
+
+    @application.post("/api/doubts/analyze-document")
+    async def analyze_doubt_document(
+        document: UploadFile = File(...),
+        subject: str = Form(default="Document analysis", max_length=100),
+        question: str = Form(default="", max_length=5000),
+        level: str = Form(default="", max_length=100),
+    ) -> dict:
+        if not is_configured():
+            raise HTTPException(
+                status_code=503,
+                detail="AI is not configured. Set LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL on the server.",
+            )
+        try:
+            contents = await document.read(MAX_DOCUMENT_BYTES + 1)
+        finally:
+            await document.close()
+        try:
+            extracted = extract_document(document.filename or "", contents)
+        except DocumentExtractionError as error:
+            raise HTTPException(status_code=400, detail=str(error)) from error
+
+        prompt = question.strip() or (
+            "Analyze this file. Give a brief summary and then an understandable, detailed "
+            "solution or interpretation based on the supplied pages or spreadsheet cells. "
+            "For numeric work, show the formula, substitutions, units, and result where applicable."
+        )
+        try:
+            result = solve_doubt(
+                subject=subject.strip() or "Document analysis",
+                question=prompt,
+                level=level,
+                document_text=str(extracted["text"]),
+            )
+            filename = (document.filename or "uploaded document").replace("\\", "/").rsplit("/", 1)[-1]
+            result["document"] = {
+                "filename": filename,
+                "kind": extracted["kind"],
+                "sources": extracted["sources"],
+                "truncated": extracted["truncated"],
+            }
+            return result
         except ValueError as error:
             raise HTTPException(status_code=400, detail=str(error)) from error
         except AIProviderNotConfigured as error:

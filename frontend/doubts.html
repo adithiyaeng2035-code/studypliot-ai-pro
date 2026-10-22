@@ -65,8 +65,13 @@
                 </datalist>
               </label>
               <label class="doubt-field">
-                <span>Your doubt <em>required</em></span>
+                <span id="question-label">Your doubt <em>required</em></span>
                 <textarea name="question" rows="6" maxlength="5000" placeholder="Describe the question or concept you're stuck onâ€¦" required></textarea>
+              </label>
+              <label class="doubt-field">
+                <span>Upload a PDF or Excel file <em>optional</em></span>
+                <input id="document-file" name="document" type="file" accept=".pdf,.xlsx,.xlsm,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12">
+                <small class="document-help">Up to 10 MB. Text-based PDF, .xlsx, or .xlsm. Scanned PDFs need OCR before upload.</small>
               </label>
               <div class="doubt-field-row">
                 <label class="doubt-field">
@@ -91,7 +96,7 @@
                 <span class="button-label">Explain and analyze</span><span aria-hidden="true">â†’</span>
               </button>
             </form>
-            <p class="privacy-note">Your question is sent to the AI provider configured for this app. Avoid including personal or sensitive information.</p>
+            <p class="privacy-note">Your question and extracted document text are sent to this app's configured AI provider. Avoid uploading private or sensitive information.</p>
           </section>
 
           <section id="doubt-result" class="panel result-panel" aria-live="polite" hidden>
@@ -99,6 +104,10 @@
               <div><span class="eyebrow">YOUR EXPLANATION</span><h2>Let's make it click.</h2></div>
               <span id="difficulty-badge" class="difficulty-badge"></span>
             </div>
+            <section id="document-source" class="result-section" hidden>
+              <h3>Analyzed document</h3>
+              <p id="document-source-text"></p>
+            </section>
             <section class="result-section">
               <h3>Short answer</h3>
               <p id="answer-text"></p>

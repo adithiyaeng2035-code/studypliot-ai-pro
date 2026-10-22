@@ -14,6 +14,8 @@
 .doubt-field input, .doubt-field textarea, .doubt-field select { background: #fff; border: 1px solid #e8e7ef; border-radius: 8px; color: var(--ink); font-size: 12px; font-weight: 400; min-width: 0; outline: none; padding: 11px 12px; width: 100%; }
 .doubt-field textarea { line-height: 1.65; resize: vertical; }
 .doubt-field input::placeholder, .doubt-field textarea::placeholder { color: #a3a6b5; }
+.doubt-field input[type="file"] { font-size: 11px; padding: 8px; }
+.document-help { color: #85889b; font-size: 10px; font-weight: 400; line-height: 1.6; }
 .doubt-field-row { display: grid; grid-template-columns: minmax(0, 1fr); }
 .solve-button { align-items: center; display: flex; font-size: 12px; justify-content: center; margin-top: 18px; min-height: 42px; width: 100%; }
 .solve-button:disabled { cursor: wait; opacity: .65; }

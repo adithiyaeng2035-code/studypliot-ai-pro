@@ -2,6 +2,8 @@ const form = document.querySelector("#doubt-form");
 const providerNotice = document.querySelector("#provider-notice");
 const errorNotice = document.querySelector("#doubt-error");
 const resultPanel = document.querySelector("#doubt-result");
+const questionField = form.elements.question;
+const documentField = document.querySelector("#document-file");
 
 function setList(selector, values) {
   const list = document.querySelector(selector);
@@ -21,7 +23,7 @@ async function checkAIStatus() {
     if (!status.configured) {
       providerNotice.hidden = false;
       providerNotice.textContent =
-        "AI doubt solving is not configured yet. Set LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL in the environment, then restart StudyPilot. The question form will work once a provider is configured.";
+        "AI is not connected yet. Configure LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL privately on the server or in Vercel settings, then restart or redeploy. Do not paste an API key into this page.";
     }
   } catch (error) {
     providerNotice.hidden = false;
@@ -37,6 +39,15 @@ function showResult(result) {
   setList("#steps-list", result.steps);
   setList("#concepts-list", result.concepts);
 
+  const documentSource = document.querySelector("#document-source");
+  const analyzedDocument = result.document;
+  documentSource.hidden = !analyzedDocument;
+  if (analyzedDocument) {
+    const parts = [analyzedDocument.filename, analyzedDocument.kind, (analyzedDocument.sources || []).join(", ")];
+    if (analyzedDocument.truncated) parts.push("excerpt shortened to fit analysis limits");
+    document.querySelector("#document-source-text").textContent = parts.filter(Boolean).join(" · ");
+  }
+
   const misconceptionWrap = document.querySelector("#misconception-wrap");
   misconceptionWrap.hidden = !result.misconception;
   document.querySelector("#misconception-text").textContent = result.misconception;
@@ -47,6 +58,16 @@ function showResult(result) {
   resultPanel.hidden = false;
 }
 
+function updateQuestionRequirement() {
+  const hasDocument = documentField.files.length > 0;
+  questionField.required = !hasDocument;
+  document.querySelector("#question-label").innerHTML = hasDocument
+    ? 'Your question <em>optional with a document</em>'
+    : 'Your doubt <em>required</em>';
+}
+
+documentField.addEventListener("change", updateQuestionRequirement);
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   errorNotice.hidden = true;
@@ -56,13 +77,28 @@ form.addEventListener("submit", async (event) => {
   button.disabled = true;
   buttonLabel.textContent = "Working through your question…";
 
-  const values = Object.fromEntries(new FormData(form));
+  const file = documentField.files[0];
+  if (file && file.size > 10 * 1024 * 1024) {
+    errorNotice.textContent = "Files must be 10 MB or smaller.";
+    errorNotice.hidden = false;
+    button.disabled = false;
+    buttonLabel.textContent = "Explain and analyze";
+    return;
+  }
+  const formData = new FormData(form);
+  const values = Object.fromEntries(formData);
+  delete values.document;
   try {
-    const response = await window.studyPilotFetch("/api/doubts/solve", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
+    const response = file
+      ? await window.studyPilotFetch("/api/doubts/analyze-document", {
+          method: "POST",
+          body: formData,
+        })
+      : await window.studyPilotFetch("/api/doubts/solve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        });
     const result = await response.json();
     if (!response.ok) throw new Error(result.detail || `Request failed (${response.status})`);
     showResult(result);
@@ -71,8 +107,10 @@ form.addEventListener("submit", async (event) => {
     errorNotice.hidden = false;
   } finally {
     button.disabled = false;
-    buttonLabel.textContent = "Explain and analyze";
+    buttonLabel.textContent = file ? "Analyze document and explain" : "Explain and analyze";
   }
 });
+
+updateQuestionRequirement();
 
 checkAIStatus();

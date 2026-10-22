@@ -119,7 +119,9 @@ be undone; export a backup first if you want to keep a copy.
   `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL`.
 - Use the Doubt Solver across subjects and study levels, including school, B.Tech,
   and M.Tech, for an AI-generated explanation, reasoning steps, concept summary,
-  likely misconception, and check-for-understanding question.
+  likely misconception, and check-for-understanding question. Upload text-based
+  PDFs or `.xlsx` / `.xlsm` workbooks for document-grounded explanations with
+  page and worksheet labels; uploads are size-bounded and sent to the configured AI provider.
 - Use the AI tutor for multilingual subject explanations, exam preparation by
   class / degree / board / university, industry applications, and study-time
   coaching from saved focus sessions over the last 7 and 30 days.
@@ -197,12 +199,18 @@ message rather than exposing raw response bodies.
 - `POST /api/assistant` with `{"message": "What should I study next?"}`
 - `GET /api/ai/status`
 - `POST /api/doubts/solve` with a subject, question, and optional level/context
+- `POST /api/doubts/analyze-document` as multipart form data with `document`, and optional `subject`, `question`, and `level`
 - `POST /api/plans/generate` to generate a reviewable study-plan draft
 - `POST /api/plans/approve` to add approved draft sessions as tasks
 
 The Doubt Solver returns `answer`, `steps`, `concepts`, `analysis`, `difficulty`,
 `misconception`, and `follow_up`. It responds with HTTP 503 when no AI provider is
 configured and HTTP 502 if the configured provider request or response fails.
+Document analysis accepts text-based PDF and `.xlsx` / `.xlsm` files up to 10 MB.
+It extracts bounded text from up to 200 PDF pages or 20 worksheets, then sends
+that excerpt with the question to the configured provider. Scanned PDFs need OCR
+before upload; large documents may be shortened. Check the answer against the
+original pages and workbook before relying on calculations or conclusions.
 
 Interactive API documentation is available at <http://127.0.0.1:8000/docs>.
 The task-list response includes `items`, `total`, `page`, `page_size`, and `pages`.
@@ -215,7 +223,7 @@ python -m pytest
 
 Install the development check tools with `python -m pip install -r requirements-dev.txt`.
 The GitHub Actions workflow runs Ruff, Python compilation checks, the test suite,
-and a dependency vulnerability audit on Python 3.10 and 3.13.
+and a dependency vulnerability audit on Python 3.12 and 3.13.
 
 See [architecture](docs/architecture.md), [workflow](docs/workflow.md), and
 [demo script](docs/demo_script.md) for project details.

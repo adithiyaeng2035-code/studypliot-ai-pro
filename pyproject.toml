@@ -8,4 +8,4 @@ requires-python = ">=3.12"
 entrypoint = "app.api.routes:app"
 
 [tool.ruff.lint.flake8-bugbear]
-extend-immutable-calls = ["fastapi.Query"]
+extend-immutable-calls = ["fastapi.Query", "fastapi.File", "fastapi.Form"]
