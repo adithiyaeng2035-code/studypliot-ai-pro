@@ -142,10 +142,21 @@ be undone; export a backup first if you want to keep a copy.
 
 For a local Ollama model, start Ollama and run the run-local-llm.ps1 script from PowerShell. The launcher uses llama3.2:3b and opens the Doubt Solver page.
 
-For local development on Windows, run `.\run-openai.ps1` from PowerShell.
-It asks for your API key without displaying it, sets the OpenAI endpoint and
-model for the app process, and starts StudyPilot. Stop an already-running app
-first. The key is removed from the process environment when the app exits.
+On each Windows laptop, clone the repository and run the launcher from the
+project directory:
+
+```powershell
+git clone https://github.com/adithiyaeng2035-code/studypliot-ai-pro.git
+cd studypliot-ai-pro
+.\run-openai.ps1
+```
+
+The launcher creates a local virtual environment, installs requirements if
+needed, enables registration and sign-in, and asks for an OpenAI API key without
+displaying it. Enter a valid key for each laptop; it is not stored in GitHub.
+The app opens at a localhost URL and runs only on that laptop. Keep the terminal
+open while using it. The key is removed from the process environment when the
+app exits.
 
 Alternatively, set the environment variables manually in a PowerShell window:
 
