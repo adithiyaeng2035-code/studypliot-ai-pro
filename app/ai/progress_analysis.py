@@ -3,8 +3,8 @@
 import json
 from typing import Any
 
-from app.database.db import Database
 from app.ai.llm_client import complete_chat
+from app.database.db import Database
 from app.services.progress_service import get_progress_analysis_context
 
 

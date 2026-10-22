@@ -7,7 +7,6 @@ from app.ai import doubt_solver
 from app.api import routes
 from app.database.db import Database
 
-
 VALID_RESULT = {
     "answer": "Acceleration is the rate of change of velocity.",
     "steps": ["Compare initial and final velocity.", "Divide the change by elapsed time."],

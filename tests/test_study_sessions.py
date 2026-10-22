@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -21,13 +21,13 @@ def make_database(tmp_path):
 
 
 def make_session_values(**overrides):
-    started_at = datetime.now(timezone.utc) - timedelta(minutes=25)
+    started_at = datetime.now(UTC) - timedelta(minutes=25)
     values = {
         "subject": "Physics",
         "duration_minutes": 25,
         "notes": "Review semiconductors",
         "started_at": started_at.isoformat(),
-        "completed_at": datetime.now(timezone.utc).isoformat(),
+        "completed_at": datetime.now(UTC).isoformat(),
     }
     values.update(overrides)
     return values
@@ -83,7 +83,7 @@ def test_study_session_rejects_invalid_values(tmp_path, overrides, message):
 
 def test_study_session_requires_timezone_and_positive_elapsed_time(tmp_path):
     database = make_database(tmp_path)
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     with pytest.raises(ValueError, match="include a timezone"):
         create_study_session(
             database,
@@ -123,7 +123,7 @@ def test_focus_time_analysis_returns_recent_daily_subject_and_streak_totals(tmp_
     today = date(2026, 10, 22)
 
     def save(day, subject, minutes):
-        completed = datetime.combine(day, datetime.min.time(), tzinfo=timezone.utc) + timedelta(hours=10)
+        completed = datetime.combine(day, datetime.min.time(), tzinfo=UTC) + timedelta(hours=10)
         create_study_session(
             database,
             make_session_values(

@@ -2,8 +2,8 @@
 
 import json
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
 from urllib.parse import urlsplit
+from urllib.request import Request, urlopen
 
 from app.config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
 
@@ -28,7 +28,7 @@ def complete_chat(system_prompt: str, user_prompt: str, *, json_mode: bool = Fal
             "Configure LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL to enable StudyPilot AI features."
         )
     if not isinstance(system_prompt, str) or not isinstance(user_prompt, str):
-        raise RuntimeError("AI prompt must be text.")
+        raise TypeError("AI prompt must be text.")
     if len(system_prompt) > MAX_SYSTEM_PROMPT_CHARS or len(user_prompt) > MAX_USER_PROMPT_CHARS:
         raise RuntimeError("AI prompt is too large. Shorten the request and try again.")
     base_url = LLM_BASE_URL.rstrip("/")

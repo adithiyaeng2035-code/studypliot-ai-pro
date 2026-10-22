@@ -9,7 +9,6 @@ from app.database.db import Database
 from app.services.progress_service import get_progress_analysis_context
 from app.services.task_service import create_task, update_task
 
-
 VALID_ANALYSIS = {
     "summary": "You have completed one of two tasks.",
     "strengths": ["You have completed a task in Biology."],

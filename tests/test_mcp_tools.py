@@ -1,5 +1,10 @@
 from app.database.db import Database
-from app.mcp.tools import add_study_task, complete_study_task, get_study_plan, list_open_tasks
+from app.mcp.tools import (
+    add_study_task,
+    complete_study_task,
+    get_study_plan,
+    list_open_tasks,
+)
 
 
 def test_mcp_tools_share_task_and_planner_services(tmp_path):

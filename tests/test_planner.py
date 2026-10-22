@@ -6,7 +6,6 @@ from app.database.db import Database
 from app.services.deadline_service import get_deadlines
 from app.services.study_planner import create_study_plan
 from app.services.task_service import create_task
-from app.services.task_service import create_task
 
 
 def test_plan_groups_due_tasks_and_lists_later_tasks(tmp_path):

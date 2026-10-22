@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
 
@@ -48,7 +48,7 @@ def test_hosted_accounts_isolate_tasks_and_protect_mutations(tmp_path, monkeypat
         json={"title": "Private task"},
     )
     assert created.status_code == 201
-    started = datetime.now(timezone.utc) - timedelta(minutes=20)
+    started = datetime.now(UTC) - timedelta(minutes=20)
     first_session = first.post(
         "/api/study-sessions",
         headers={"X-CSRF-Token": csrf},
@@ -58,7 +58,7 @@ def test_hosted_accounts_isolate_tasks_and_protect_mutations(tmp_path, monkeypat
             "duration_minutes": 20,
             "notes": "Private session",
             "started_at": started.isoformat(),
-            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "completed_at": datetime.now(UTC).isoformat(),
         },
     )
     assert first_session.status_code == 201

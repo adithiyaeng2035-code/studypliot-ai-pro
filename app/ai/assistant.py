@@ -8,7 +8,6 @@ from app.database.db import Database
 from app.services.progress_service import get_progress
 from app.services.task_service import list_tasks
 
-
 TUTOR_MODES = {
     "general": "Help with everyday questions across topics. Be clear, practical, and flag uncertainty.",
     "learn": "Teach school and university topics across mathematics, physics, chemistry, biology, computer science, environmental science, electrical/electronics/civil/mechanical engineering, business and management degrees, humanities, and languages including English, Tamil, Hindi, French, German, and Japanese. Explain the core idea, then steps and a simple example. Match the student's level and preferred language.",

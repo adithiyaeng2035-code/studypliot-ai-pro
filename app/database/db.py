@@ -1,11 +1,11 @@
 """SQLite and PostgreSQL database access."""
 
-import sqlite3
-from contextlib import contextmanager
-from collections.abc import Iterator
-from datetime import datetime, timezone
-from pathlib import Path
 import re
+import sqlite3
+from collections.abc import Iterator
+from contextlib import contextmanager
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 
@@ -86,7 +86,7 @@ class Database:
                             session.execute(statement)
                     session.execute(
                         "INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)",
-                        (version, datetime.now(timezone.utc).isoformat()),
+                        (version, datetime.now(UTC).isoformat()),
                     )
         finally:
             connection.close()

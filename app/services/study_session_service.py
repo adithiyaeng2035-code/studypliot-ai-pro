@@ -1,6 +1,6 @@
 """Persistent study-session history."""
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from app.database.db import Database
@@ -24,12 +24,12 @@ def create_study_session(
         raise ValueError("started_at and completed_at must be valid ISO datetimes") from error
     if started_at.tzinfo is None or completed_at.tzinfo is None:
         raise ValueError("session timestamps must include a timezone")
-    started_at = started_at.astimezone(timezone.utc)
-    completed_at = completed_at.astimezone(timezone.utc)
+    started_at = started_at.astimezone(UTC)
+    completed_at = completed_at.astimezone(UTC)
     if completed_at <= started_at:
         raise ValueError("completed_at must be after started_at")
 
-    created_at = datetime.now(timezone.utc).isoformat()
+    created_at = datetime.now(UTC).isoformat()
     with database.session() as connection:
         if task_id is not None:
             query = "SELECT id, subject FROM tasks WHERE id = ?"

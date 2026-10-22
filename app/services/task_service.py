@@ -1,7 +1,7 @@
 """Task creation and management services."""
 
 import calendar
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from app.database.db import Database
@@ -114,7 +114,7 @@ def _normalize_task(
             raise ValueError("repeat through date cannot be before the first due date")
     elif recurrence_until is not None:
         raise ValueError("repeat through date requires a recurring task")
-    created_at = datetime.now(timezone.utc).isoformat()
+    created_at = datetime.now(UTC).isoformat()
     subject = str(values.get("subject", "General")).strip() or "General"
     description = str(values.get("description", "")).strip()
     return (
@@ -233,7 +233,7 @@ def update_task(
             raise ValueError("completed must be a boolean")
         normalized["completed"] = int(normalized["completed"])
         normalized["completed_at"] = (
-            datetime.now(timezone.utc).isoformat() if normalized["completed"] else None
+            datetime.now(UTC).isoformat() if normalized["completed"] else None
         )
 
     assignments = ", ".join(f"{field} = ?" for field in normalized)
@@ -277,7 +277,7 @@ def update_task(
                     (series_id, next_due_date),
                 ).fetchone()
                 if duplicate is None:
-                    created_at = datetime.now(timezone.utc).isoformat()
+                    created_at = datetime.now(UTC).isoformat()
                     next_task = (
                         existing["title"], existing["subject"], existing["description"],
                         next_due_date, existing["estimated_minutes"], created_at,

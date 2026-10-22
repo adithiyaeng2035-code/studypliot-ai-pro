@@ -3,7 +3,7 @@
 import hashlib
 import re
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from pwdlib import PasswordHash
@@ -48,7 +48,7 @@ def register_user(
     if len(normalized_name) > 120:
         raise ValueError("name must be 120 characters or fewer")
 
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     with database.session() as connection:
         user_count = connection.execute("SELECT COUNT(*) AS total FROM users").fetchone()["total"]
         if not AUTH_ALLOW_REGISTRATION:
@@ -88,9 +88,9 @@ def authenticate_user(
     except ValueError:
         normalized_email = ""
     fingerprint = hashlib.sha256(
-        f"{normalized_email}|{source_address}".encode("utf-8")
+        f"{normalized_email}|{source_address}".encode()
     ).hexdigest()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     cutoff = (now - LOGIN_WINDOW).isoformat()
     with database.session() as connection:
         connection.execute(
@@ -130,7 +130,7 @@ def create_session(database: Database, user_id: int) -> tuple[str, str]:
     token = secrets.token_urlsafe(32)
     csrf_token = secrets.token_urlsafe(32)
     token_hash = hashlib.sha256(token.encode("ascii")).hexdigest()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     with database.session() as connection:
         connection.execute(
             "DELETE FROM auth_sessions WHERE expires_at <= ?", (now.isoformat(),)
@@ -154,7 +154,7 @@ def resolve_session(database: Database, token: str | None) -> dict[str, Any] | N
     if not token or len(token) > 128:
         return None
     token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     with database.session() as connection:
         row = connection.execute(
             """SELECT users.id, users.email, users.full_name,

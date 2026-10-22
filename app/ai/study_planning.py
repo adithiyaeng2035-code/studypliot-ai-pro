@@ -6,8 +6,8 @@ from datetime import date, timedelta
 from typing import Any
 
 from app.ai.llm_client import complete_chat
-from app.services.task_service import create_tasks
 from app.database.db import Database
+from app.services.task_service import create_tasks
 
 
 def _validate_plan(
@@ -28,7 +28,7 @@ def _validate_plan(
     seen_dates = set()
     for session in sessions:
         if not isinstance(session, dict):
-            raise RuntimeError("The model returned an invalid study session.")
+            raise RuntimeError("The model returned an invalid study session.")  # noqa: TRY004 - invalid provider output is an upstream runtime failure
         if not {"date", "title", "description", "estimated_minutes"}.issubset(session):
             raise RuntimeError("The model returned a study session with missing fields.")
         try:
@@ -150,9 +150,9 @@ def execute_approved_plan(
     study_days_per_week = payload.get("study_days_per_week")
     minutes_per_day = payload.get("minutes_per_day")
     if not isinstance(study_days_per_week, int) or isinstance(study_days_per_week, bool):
-        raise ValueError("study_days_per_week must be an integer")
+        raise ValueError("study_days_per_week must be an integer")  # noqa: TRY004 - payload validation maps to HTTP 400
     if not isinstance(minutes_per_day, int) or isinstance(minutes_per_day, bool):
-        raise ValueError("minutes_per_day must be an integer")
+        raise ValueError("minutes_per_day must be an integer")  # noqa: TRY004 - payload validation maps to HTTP 400
     if not 1 <= study_days_per_week <= 7:
         raise ValueError("study_days_per_week must be between 1 and 7")
     if not 15 <= minutes_per_day <= 240:

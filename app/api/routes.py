@@ -4,9 +4,8 @@ import csv
 import hmac
 import io
 import json
-import logging
 import time
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any, Literal
 
@@ -30,9 +29,6 @@ from app.config import (
 )
 from app.database.db import Database
 from app.logging_config import configure_logging
-from app.services.deadline_service import get_deadlines
-from app.services.backup_service import restore_backup
-from app.services.calendar_service import get_calendar_events
 from app.services.auth_service import (
     LoginRateLimited,
     authenticate_user,
@@ -42,6 +38,9 @@ from app.services.auth_service import (
     resolve_session,
     revoke_session,
 )
+from app.services.backup_service import restore_backup
+from app.services.calendar_service import get_calendar_events
+from app.services.deadline_service import get_deadlines
 from app.services.progress_service import get_progress
 from app.services.study_planner import create_study_plan
 from app.services.study_session_service import (
@@ -383,7 +382,7 @@ def create_app(
         try:
             with app_database.session() as connection:
                 connection.execute("SELECT 1")
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001 - any database health-check error means unavailable
             logger.warning(
                 "database_health_check_failed",
                 extra={"event": "database_health_check_failed", "error_type": type(error).__name__},
@@ -608,7 +607,7 @@ def create_app(
         backup = {
             "app": "StudyPilot",
             "schema_version": 1,
-            "exported_at": datetime.now(timezone.utc).isoformat(),
+            "exported_at": datetime.now(UTC).isoformat(),
             "tasks": [dict(row) for row in tasks],
             "study_sessions": [dict(row) for row in sessions],
         }

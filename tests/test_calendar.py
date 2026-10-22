@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 from app.database.db import Database
 from app.services.calendar_service import get_calendar_events
@@ -37,8 +37,8 @@ def test_calendar_returns_due_tasks_and_sessions_for_owner_and_date_range(tmp_pa
             "subject": "Physics",
             "duration_minutes": 25,
             "notes": "",
-            "started_at": datetime(2026, 10, 20, 9, tzinfo=timezone.utc).isoformat(),
-            "completed_at": datetime(2026, 10, 20, 9, 25, tzinfo=timezone.utc).isoformat(),
+            "started_at": datetime(2026, 10, 20, 9, tzinfo=UTC).isoformat(),
+            "completed_at": datetime(2026, 10, 20, 9, 25, tzinfo=UTC).isoformat(),
         },
         user_id=first_user,
     )

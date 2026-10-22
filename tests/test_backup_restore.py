@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
 
@@ -20,7 +20,7 @@ def test_backup_restore_adds_data_and_remaps_session_task_link(tmp_path):
             "estimated_minutes": 45,
         },
     )
-    started_at = datetime.now(timezone.utc) - timedelta(minutes=25)
+    started_at = datetime.now(UTC) - timedelta(minutes=25)
     create_study_session(
         source,
         {
@@ -29,7 +29,7 @@ def test_backup_restore_adds_data_and_remaps_session_task_link(tmp_path):
             "duration_minutes": 25,
             "notes": "Review feedback loops",
             "started_at": started_at.isoformat(),
-            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "completed_at": datetime.now(UTC).isoformat(),
         },
     )
     backup = TestClient(create_app(source)).get("/api/exports/backup.json").json()
