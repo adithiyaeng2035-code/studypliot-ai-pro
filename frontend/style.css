@@ -16,6 +16,9 @@
 body { margin: 0; min-width: 320px; }
 button, input, textarea, select { font: inherit; }
 button, a, select { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid #4b39a3 !important; outline-offset: 2px; }
+.skip-link { background: #fff; border: 2px solid #4b39a3; border-radius: 6px; color: #30266f; left: 12px; padding: 9px 12px; position: fixed; top: 8px; transform: translateY(-160%); z-index: 1000; }
+.skip-link:focus { transform: translateY(0); }
 .app-shell { min-height: 100vh; }
 .sidebar {
   background: #fff; border-right: 1px solid var(--line); bottom: 0; display: flex;
@@ -71,6 +74,7 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .calendar-panel { margin-top: 17px; overflow: hidden; }
 .calendar-controls { align-items: center; display: flex; gap: 7px; }
 .calendar-controls button { background: #fff; border: 1px solid var(--line); border-radius: 7px; color: #686b80; cursor: pointer; min-height: 32px; padding: 0 9px; }
+.calendar-export { align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 7px; color: #686b80; display: inline-flex; font-size: 11px; min-height: 32px; padding: 0 9px; text-decoration: none; white-space: nowrap; }
 .calendar-controls #calendar-period { color: #55586d; font-size: 12px; font-weight: 650; min-width: 142px; text-align: center; }
 .calendar-weekdays, .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
 .calendar-weekdays { border-bottom: 1px solid var(--line); color: #989bad; font-size: 10px; margin-top: 17px; padding-bottom: 8px; text-align: center; }
@@ -84,6 +88,15 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .calendar-task { background: #f2efff; color: #5f4bb5; }
 .calendar-task.is-complete { opacity: .57; text-decoration: line-through; }
 .calendar-session { background: #eaf7f1; color: #348064; }
+.trends-panel, .reminder-panel { margin-top: 16px; }
+.progress-trends { display: grid; gap: 5px; max-height: 290px; overflow: auto; padding: 2px 2px 2px 0; }
+.trend-day { align-items: center; display: grid; gap: 10px; grid-template-columns: 46px minmax(45px, 1fr) 112px; }
+.trend-date, .trend-summary { color: var(--muted); font-size: 10px; }
+.trend-track { background: #f0eff6; border-radius: 5px; display: block; height: 8px; overflow: hidden; }
+.trend-bar { background: linear-gradient(90deg, #8069df, #62b796); border-radius: inherit; display: block; height: 100%; min-width: 0; }
+.trend-streak { color: #595174; font-size: 11px; font-weight: 600; margin: 12px 0 0; }
+.reminder-panel .secondary-button { min-height: 36px; }
+.reminder-list { color: #686b80; font-size: 11px; line-height: 1.6; margin: 8px 0 0; padding-left: 18px; }
 .calendar-legend { align-items: center; color: #9295a7; display: flex; font-size: 10px; gap: 6px; margin: 10px 0 0; }
 .calendar-task-dot, .calendar-session-dot { border-radius: 50%; display: inline-block; height: 7px; margin-left: 7px; width: 7px; }
 .calendar-task-dot { background: #856fe1; }
@@ -121,7 +134,7 @@ input:focus, textarea:focus, select:focus { border-color: #aa9aec !important; bo
 .account-box button.delete-account { border-color: #ebc6c5; color: #a33d3a; font-size: 11px; min-height: 30px; padding: 4px 7px; }
 .form-details { display: grid; gap: 8px; grid-template-columns: 1fr 1.1fr .7fr; margin-top: 9px; }
 .form-details label, .form-recurrence label, .description-label { color: #85889c; display: grid; font-size: 10px; gap: 5px; }
-.form-details input, .form-recurrence select, .form-recurrence input, .description-label textarea { background: #fff; border: 1px solid #e9e8f0; border-radius: 6px; color: var(--ink); font-size: 11px; min-width: 0; outline: none; padding: 8px; width: 100%; }
+.form-details input, .form-recurrence select, .form-recurrence input, .description-label input, .description-label textarea { background: #fff; border: 1px solid #e9e8f0; border-radius: 6px; color: var(--ink); font-size: 11px; min-width: 0; outline: none; padding: 8px; width: 100%; }
 .form-recurrence { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; margin-top: 9px; }
 .description-label { margin-top: 9px; }
 .description-label em { color: #aaacb9; font-style: normal; }
@@ -144,6 +157,7 @@ input:focus, textarea:focus, select:focus { border-color: #aa9aec !important; bo
 .task-item.is-complete .task-title { color: #a2a4b1; text-decoration: line-through; }
 .task-meta { color: #9699aa; display: flex; flex-wrap: wrap; font-size: 10px; gap: 8px; margin-top: 5px; }
 .task-description { color: #7d8093; font-size: 11px; margin: 6px 0 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.task-resource { color: var(--purple); display: inline-block; font-size: 10px; margin-top: 6px; }
 .delete-button { background: transparent; border: 0; border-radius: 5px; color: #a7a9b6; cursor: pointer; font-size: 16px; padding: 0 5px; }
 .delete-button:hover { background: #fff1f0; color: #bd4b45; }
 .right-column { display: grid; gap: 15px; }
@@ -243,6 +257,7 @@ footer span { color: #c6c4d1; padding: 0 4px; }
   .calendar-controls { max-width: 100%; width: 100%; }
   .calendar-controls #calendar-period { flex: 1; }
   .calendar-controls button { min-height: 38px; }
+  .calendar-export { min-height: 38px; }
   .calendar-day { min-height: 88px; }
 }
 @media (max-width: 490px) {

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <div class="app-shell">
       <aside class="sidebar">
         <a class="brand" href="/" aria-label="StudyPilot home"><span class="brand-mark">S</span> StudyPilot</a>
@@ -29,7 +30,7 @@
         <span class="sidebar-footer">Made for your next big goal</span>
       </aside>
 
-      <main class="main-content" id="dashboard">
+      <main class="main-content" id="main-content">
         <header class="topbar">
           <div><span class="eyebrow">YOUR PERSONAL STUDY SPACE</span><h1>Good to see you.</h1></div>
           <div class="today-chip"><span class="status-dot"></span> <span id="today-label">Today</span></div>
@@ -72,11 +73,31 @@
               <span id="calendar-period" aria-live="polite"></span>
               <button id="calendar-next" type="button" aria-label="Next period">›</button>
               <button id="calendar-view-toggle" type="button" aria-pressed="false">Month</button>
+              <a class="calendar-export" href="/api/exports/calendar.ics" download>Export .ics</a>
             </div>
           </div>
           <div class="calendar-weekdays" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
           <div id="calendar-grid" class="calendar-grid" aria-live="polite"><p class="empty-state">Loading calendar…</p></div>
           <p class="calendar-legend"><span class="calendar-task-dot"></span> Due task <span class="calendar-session-dot"></span> Focus session</p>
+        </section>
+
+        <section class="panel trends-panel" aria-labelledby="trends-title">
+          <div class="panel-heading">
+            <div><span class="eyebrow">YOUR ROUTINE</span><h2 id="trends-title">Progress trends</h2></div>
+            <label class="goal-picker" for="trend-days"><span>Range</span><select id="trend-days" aria-label="Progress trend date range"><option value="30">30 days</option><option value="7">7 days</option><option value="90">90 days</option></select></label>
+          </div>
+          <p class="panel-subtitle">Daily completed tasks and focus minutes from your saved history.</p>
+          <div id="progress-trends" class="progress-trends" role="group" aria-label="Daily progress trends"><p class="empty-state">Loading progress trends…</p></div>
+          <p id="trend-streak" class="trend-streak" role="status"></p>
+        </section>
+
+        <section class="panel reminder-panel" aria-labelledby="reminder-title">
+          <div class="panel-heading"><div><span class="eyebrow">DEADLINE SUPPORT</span><h2 id="reminder-title">Study reminders</h2></div></div>
+          <p class="panel-subtitle">Choose a reminder window and get browser notifications while StudyPilot is open.</p>
+          <label class="goal-picker reminder-range" for="reminder-days"><span>Remind me about tasks due within</span><select id="reminder-days" aria-label="Reminder time window"><option value="1">1 day</option><option value="3">3 days</option><option value="7">7 days</option></select></label>
+          <button id="reminder-toggle" class="secondary-button" type="button">Enable browser reminders</button>
+          <p id="reminder-status" class="insight-status" role="status" aria-live="polite">Reminders are off.</p>
+          <ul id="reminder-list" class="reminder-list" aria-label="Tasks needing attention"></ul>
         </section>
 
         <div class="content-grid">
@@ -103,6 +124,7 @@
                 <label id="recurrence-until-label" hidden><span>Repeat through</span><input name="recurrence_until" type="date" disabled></label>
               </div>
               <label class="description-label"><span>Description <em>(optional)</em></span><textarea name="description" rows="2" maxlength="2000" placeholder="Add a note to help you get started"></textarea></label>
+              <label class="description-label"><span>Study resource link <em>(optional)</em></span><input name="resource_url" type="url" maxlength="2048" placeholder="https://…" autocomplete="url"></label>
             </form>
             <div class="task-list-filters" role="search" aria-label="Find tasks">
               <label><span>Search tasks</span><input id="task-search" type="search" maxlength="100" placeholder="Title, subject, or description"></label>
@@ -124,7 +146,7 @@
                 <div><span class="eyebrow">A LITTLE AT A TIME</span><h2>Study plan</h2></div>
                 <span class="soft-icon">â—·</span>
               </div>
-              <p class="panel-subtitle">Open tasks grouped by their due date.</p>
+              <p class="panel-subtitle">Open tasks grouped by due date. Adjust dates and effort in the task list.</p>
               <div id="plan-list" class="plan-list"><p class="empty-state">Building your planâ€¦</p></div>
             </section>
             <section class="panel deadlines-panel">
@@ -202,6 +224,13 @@
                 <input id="backup-file" type="file" accept=".json,application/json" required>
                 <button class="export-link" type="submit">Restore backup</button>
               </form>
+              <form id="task-csv-import-form" class="export-actions">
+                <label class="export-link export-link-secondary" for="task-csv-file">Choose tasks CSV</label>
+                <input id="task-csv-file" type="file" accept=".csv,text/csv" required>
+                <button class="export-link" type="submit">Import tasks</button>
+              </form>
+              <p id="task-csv-import-status" role="status" aria-live="polite"></p>
+              <p class="panel-subtitle">CSV imports add tasks; importing the same file again creates duplicates. Use a JSON backup to restore focus-session history.</p>
               <p class="panel-subtitle">Restore adds the backup's tasks and focus sessions; it does not replace current data. Restoring the same file again adds duplicates.</p>
               <p id="backup-restore-status" role="status" aria-live="polite"></p>
             </section>

@@ -33,30 +33,82 @@ function renderDraft(plan) {
     `${plan.subject} · ${plan.sessions.length} sessions · ${plan.start_date} through ${plan.deadline}`;
   sessionContainer.replaceChildren();
 
-  for (const session of plan.sessions) {
+  plan.sessions.forEach((session, index) => {
     const card = document.createElement("article");
     card.className = "draft-session";
-    const date = document.createElement("span");
-    date.className = "draft-session-date";
-    date.textContent = new Intl.DateTimeFormat(undefined, {
-      weekday: "short", month: "short", day: "numeric", year: "numeric",
-    }).format(new Date(`${session.date}T12:00:00`));
-    const title = document.createElement("h3");
-    title.textContent = session.title;
-    const description = document.createElement("p");
-    description.textContent = session.description;
-    const minutes = document.createElement("span");
-    minutes.className = "draft-session-time";
-    minutes.textContent = `${session.estimated_minutes} minutes`;
-    card.append(date, title, description, minutes);
+    const heading = document.createElement("strong");
+    heading.className = "draft-session-date";
+    heading.textContent = `Session ${index + 1}`;
+    card.append(heading);
+    const fields = [
+      ["date", "Date", "date", session.date],
+      ["title", "Session title", "text", session.title],
+      ["description", "Notes", "text", session.description],
+      ["estimated_minutes", "Minutes", "number", session.estimated_minutes],
+    ];
+    card.dataset.index = String(index);
+    for (const [name, labelText, type, value] of fields) {
+      const label = document.createElement("label");
+      label.className = "draft-edit-field";
+      label.textContent = labelText;
+      const input = document.createElement("input");
+      input.type = type;
+      input.dataset.sessionField = name;
+      input.value = String(value ?? "");
+      if (type === "number") { input.min = "1"; input.max = String(plan.minutes_per_day); input.required = true; }
+      if (type === "date") { input.min = plan.start_date; input.max = plan.deadline; input.required = true; }
+      if (name === "title") { input.maxLength = 200; input.required = true; }
+      if (name === "description") input.maxLength = 2000;
+      label.append(input);
+      card.append(label);
+    }
+    const remove = document.createElement("button");
+    remove.className = "secondary-button draft-remove";
+    remove.type = "button";
+    remove.dataset.removeSession = String(index);
+    remove.textContent = "Remove session";
+    card.append(remove);
     sessionContainer.append(card);
-  }
+  });
 
   document.querySelector("#draft-totals").textContent =
     `Total planned study time: ${plan.total_minutes} minutes`;
   draftPanel.hidden = false;
   draftPanel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+function syncDraftFromEditor() {
+  if (!currentDraft) return;
+  const updated = [];
+  for (const card of sessionContainer.querySelectorAll(".draft-session")) {
+    const get = (field) => card.querySelector(`[data-session-field="${field}"]`).value;
+    updated.push({
+      date: get("date"), title: get("title").trim(), description: get("description").trim(),
+      estimated_minutes: Number(get("estimated_minutes")),
+    });
+  }
+  currentDraft.sessions = updated;
+  currentDraft.total_minutes = updated.reduce((total, item) => total + item.estimated_minutes, 0);
+  document.querySelector("#draft-totals").textContent = `Total planned study time: ${currentDraft.total_minutes} minutes`;
+}
+
+sessionContainer.addEventListener("input", syncDraftFromEditor);
+sessionContainer.addEventListener("click", (event) => {
+  const remove = event.target.closest("[data-remove-session]");
+  if (!remove || !currentDraft) return;
+  syncDraftFromEditor();
+  currentDraft.sessions.splice(Number(remove.dataset.removeSession), 1);
+  currentDraft.total_minutes = currentDraft.sessions.reduce((total, item) => total + item.estimated_minutes, 0);
+  renderDraft(currentDraft);
+});
+
+document.querySelector("#add-plan-session").addEventListener("click", () => {
+  if (!currentDraft) return;
+  syncDraftFromEditor();
+  currentDraft.sessions.push({ date: currentDraft.start_date, title: "Study session", description: "", estimated_minutes: Math.min(30, currentDraft.minutes_per_day) });
+  currentDraft.total_minutes += Math.min(30, currentDraft.minutes_per_day);
+  renderDraft(currentDraft);
+});
 
 plannerForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -94,6 +146,7 @@ document.querySelector("#discard-draft").addEventListener("click", () => {
 
 document.querySelector("#approve-draft").addEventListener("click", async (event) => {
   if (!currentDraft) return;
+  syncDraftFromEditor();
   showNotice("");
   const button = event.currentTarget;
   const label = button.querySelector(".button-label");

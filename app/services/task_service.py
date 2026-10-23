@@ -1,8 +1,11 @@
 """Task creation and management services."""
 
 import calendar
+import csv
+import io
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
+from urllib.parse import urlsplit
 
 from app.database.db import Database
 
@@ -83,7 +86,7 @@ RECURRENCE_RULES = {"none", "daily", "weekly", "monthly"}
 
 def _normalize_task(
     values: dict[str, Any],
-) -> tuple[str, str, str, str | None, int, str, str, str | None]:
+) -> tuple[str, str, str, str | None, int, str, str, str | None, str]:
     title = str(values.get("title", "")).strip()
     if not title:
         raise ValueError("title is required")
@@ -117,9 +120,14 @@ def _normalize_task(
     created_at = datetime.now(UTC).isoformat()
     subject = str(values.get("subject", "General")).strip() or "General"
     description = str(values.get("description", "")).strip()
+    resource_url = str(values.get("resource_url", "")).strip()
+    if resource_url:
+        parsed_resource = urlsplit(resource_url)
+        if parsed_resource.scheme not in {"http", "https"} or not parsed_resource.hostname or parsed_resource.username or parsed_resource.password or len(resource_url) > 2048:
+            raise ValueError("resource_url must be a valid HTTP or HTTPS link")
     return (
         title, subject, description, due_date, minutes, created_at,
-        recurrence_rule, recurrence_until,
+        recurrence_rule, recurrence_until, resource_url,
     )
 
 
@@ -149,8 +157,8 @@ def create_task(
     with database.session() as connection:
         insert = """INSERT INTO tasks
                     (title, subject, description, due_date, estimated_minutes, created_at,
-                     recurrence_rule, recurrence_until, user_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+                     recurrence_rule, recurrence_until, resource_url, user_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
         parameters = (*normalized, user_id)
         if database.is_postgres:
             task_id = connection.execute(insert + " RETURNING id", parameters).fetchone()["id"]
@@ -176,8 +184,8 @@ def create_tasks(
     with database.session() as connection:
         insert = """INSERT INTO tasks
                     (title, subject, description, due_date, estimated_minutes, created_at,
-                     recurrence_rule, recurrence_until, user_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+                     recurrence_rule, recurrence_until, resource_url, user_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
         for values in normalized_tasks:
             parameters = (*values, user_id)
             if database.is_postgres:
@@ -194,10 +202,84 @@ def create_tasks(
     return created
 
 
+def import_tasks_csv(
+    database: Database, contents: str, *, user_id: int | None = None,
+    max_rows: int = 5000,
+) -> int:
+    """Validate and atomically import a spreadsheet-friendly task CSV."""
+    reader = csv.DictReader(io.StringIO(contents))
+    if not reader.fieldnames or "title" not in reader.fieldnames:
+        raise ValueError("CSV must include a title column")
+    if len(reader.fieldnames) != len(set(reader.fieldnames)):
+        raise ValueError("CSV contains duplicate column names")
+    prepared: list[tuple[tuple[Any, ...], bool, str | None]] = []
+    for row_number, row in enumerate(reader, start=2):
+        if len(prepared) >= max_rows:
+            raise ValueError(f"CSV cannot contain more than {max_rows} tasks")
+        if None in row:
+            raise ValueError(f"CSV row {row_number} has extra values")
+        if row.get("title") is None:
+            raise ValueError(f"CSV row {row_number} is missing its title")
+        try:
+            estimated_minutes = int(row.get("estimated_minutes") or 30)
+        except (TypeError, ValueError) as error:
+            raise ValueError(f"CSV row {row_number}: estimated_minutes must be an integer") from error
+        values = {
+            "title": row.get("title", ""),
+            "subject": row.get("subject", "General"),
+            "description": row.get("description", ""),
+            "resource_url": row.get("resource_url", ""),
+            "due_date": row.get("due_date") or None,
+            "estimated_minutes": estimated_minutes,
+            "recurrence_rule": row.get("recurrence_rule") or "none",
+            "recurrence_until": row.get("recurrence_until") or None,
+        }
+        try:
+            normalized = _normalize_task(values)
+        except (ValueError, TypeError) as error:
+            raise ValueError(f"CSV row {row_number}: {error}") from error
+        completed_value = (row.get("completed") or "false").strip().lower()
+        if completed_value not in {"true", "false", "1", "0", "yes", "no"}:
+            raise ValueError(f"CSV row {row_number}: completed must be true or false")
+        source_series = str(row.get("recurrence_series_id") or "").strip() or None
+        prepared.append((normalized, completed_value in {"true", "1", "yes"}, source_series))
+
+    if not prepared:
+        raise ValueError("CSV does not contain any tasks")
+    with database.session() as connection:
+        insert = """INSERT INTO tasks
+            (title, subject, description, due_date, estimated_minutes, created_at,
+             recurrence_rule, recurrence_until, resource_url, completed, completed_at,
+             recurrence_series_id, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)"""
+        imported_ids: list[tuple[int, tuple[Any, ...], str | None]] = []
+        series_ids: dict[str, int] = {}
+        for normalized, completed, source_series in prepared:
+            completed_at = datetime.now(UTC).isoformat() if completed else None
+            values = (*normalized, int(completed), completed_at, user_id)
+            if database.is_postgres:
+                task_id = connection.execute(insert + " RETURNING id", values).fetchone()["id"]
+            else:
+                task_id = connection.execute(insert, values).lastrowid
+            task_id = int(task_id)
+            imported_ids.append((task_id, normalized, source_series))
+            if normalized[6] != "none" and source_series and source_series not in series_ids:
+                series_ids[source_series] = task_id
+        for task_id, normalized, source_series in imported_ids:
+            if normalized[6] == "none":
+                continue
+            series_id = series_ids.get(source_series) if source_series else task_id
+            connection.execute(
+                "UPDATE tasks SET recurrence_series_id = ? WHERE id = ?",
+                (series_id, task_id),
+            )
+    return len(prepared)
+
+
 def update_task(
     database: Database, task_id: int, changes: dict[str, Any], *, user_id: int | None = None
 ) -> dict[str, Any]:
-    allowed = {"title", "subject", "description", "due_date", "estimated_minutes", "completed"}
+    allowed = {"title", "subject", "description", "resource_url", "due_date", "estimated_minutes", "completed"}
     unknown = set(changes) - allowed
     if unknown:
         raise ValueError(f"unsupported fields: {', '.join(sorted(unknown))}")
@@ -219,6 +301,13 @@ def update_task(
         if normalized["description"] is None:
             raise ValueError("description cannot be null")
         normalized["description"] = str(normalized["description"]).strip()
+    if "resource_url" in normalized:
+        resource = str(normalized["resource_url"]).strip()
+        if resource:
+            parsed = urlsplit(resource)
+            if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.password or len(resource) > 2048:
+                raise ValueError("resource_url must be a valid HTTP or HTTPS link")
+        normalized["resource_url"] = resource
     if "estimated_minutes" in normalized:
         minutes = normalized["estimated_minutes"]
         if not isinstance(minutes, int) or isinstance(minutes, bool) or not 1 <= minutes <= 1440:
@@ -282,13 +371,14 @@ def update_task(
                         existing["title"], existing["subject"], existing["description"],
                         next_due_date, existing["estimated_minutes"], created_at,
                         existing["recurrence_rule"], existing["recurrence_until"],
+                        existing["resource_url"],
                         series_id, existing["user_id"],
                     )
                     connection.execute(
                         """INSERT INTO tasks
                            (title, subject, description, due_date, estimated_minutes, created_at,
-                            recurrence_rule, recurrence_until, recurrence_series_id, user_id)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                            recurrence_rule, recurrence_until, resource_url, recurrence_series_id, user_id)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                         next_task,
                     )
         row = connection.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()

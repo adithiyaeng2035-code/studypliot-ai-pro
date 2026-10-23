@@ -129,6 +129,131 @@ async function loadProgress() {
     `${progress.focus_sessions} focus session(s) saved`;
 }
 
+async function loadProgressTrends() {
+  const days = Number(document.querySelector("#trend-days").value);
+  const result = await api(`/progress/trends?days=${days}`);
+  const container = document.querySelector("#progress-trends");
+  const maximum = Math.max(1, ...result.days.map((point) => point.focus_minutes));
+  container.replaceChildren();
+  for (const point of result.days) {
+    const row = document.createElement("div");
+    row.className = "trend-day";
+    const date = new Date(`${point.date}T12:00:00`);
+    const label = document.createElement("span");
+    label.className = "trend-date";
+    label.textContent = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(date);
+    const track = document.createElement("span");
+    track.className = "trend-track";
+    const bar = document.createElement("span");
+    bar.className = "trend-bar";
+    bar.style.width = `${Math.max(point.focus_minutes ? 3 : 0, (point.focus_minutes / maximum) * 100)}%`;
+    track.append(bar);
+    const summary = document.createElement("span");
+    summary.className = "trend-summary";
+    summary.textContent = `${point.focus_minutes} min · ${point.completed_tasks} tasks`;
+    row.setAttribute("role", "img");
+    const subjects = point.completed_by_subject.map((item) => `${item.subject}: ${item.completed}`).join(", ") || "no task completions by subject";
+    row.setAttribute("aria-label", `${date.toLocaleDateString()}: ${point.focus_minutes} focus minutes, ${point.completed_tasks} tasks completed; ${subjects}`);
+    row.title = `${point.focus_minutes} focus minutes · ${subjects}`;
+    row.append(label, track, summary);
+    container.append(row);
+  }
+  let streak = 0;
+  let index = result.days.length - 1;
+  const latest = result.days[index];
+  if (latest && !latest.focus_minutes && !latest.completed_tasks) index -= 1;
+  for (; index >= 0; index -= 1) {
+    const point = result.days[index];
+    if (!point || (!point.focus_minutes && !point.completed_tasks)) break;
+    streak += 1;
+  }
+  document.querySelector("#trend-streak").textContent = streak
+    ? `Current activity streak: ${streak} day${streak === 1 ? "" : "s"}.`
+    : "Start a streak by saving a focus session or completing a task today.";
+}
+
+async function loadReminders() {
+  const toggle = document.querySelector("#reminder-toggle");
+  const status = document.querySelector("#reminder-status");
+  const list = document.querySelector("#reminder-list");
+  const range = document.querySelector("#reminder-days");
+  const rangeKey = "studypilot:reminder-days";
+  range.value = localStorage.getItem(rangeKey) || "1";
+  const enabled = localStorage.getItem("studypilot:browser-reminders") === "on";
+  toggle.textContent = enabled ? "Turn off browser reminders" : "Enable browser reminders";
+  if (enabled && "Notification" in window && Notification.permission === "granted") {
+    status.textContent = "Browser reminders are enabled while this page is open.";
+  } else if (enabled) {
+    status.textContent = "Notifications are not allowed by this browser. Enable them in browser site settings.";
+  } else {
+    status.textContent = "Reminders are off.";
+  }
+  const days = Number(range.value);
+  const result = await api(`/deadlines?days=${days}&limit=25`);
+  const due = [...result.overdue.map((task) => ({ ...task, overdue: true })), ...result.upcoming];
+  list.replaceChildren();
+  if (!due.length) {
+    const item = document.createElement("li");
+    item.textContent = "No tasks are due in this window or overdue.";
+    list.append(item);
+    return;
+  }
+  for (const task of due) {
+    const item = document.createElement("li");
+    item.textContent = `${task.overdue ? "Overdue" : `Due ${formatDate(task.due_date)}`}: ${task.title}`;
+    list.append(item);
+  }
+  if (enabled && "Notification" in window && Notification.permission === "granted") {
+    const today = localDateKey(new Date());
+    const sentKey = `studypilot:reminders-sent:${today}`;
+    const sent = new Set(JSON.parse(localStorage.getItem(sentKey) || "[]"));
+    for (const task of due) {
+      if (sent.has(String(task.id))) continue;
+      new Notification(task.overdue ? "StudyPilot: overdue task" : `StudyPilot: due ${task.due_date}`, { body: task.title, tag: `studypilot-task-${task.id}` });
+      sent.add(String(task.id));
+    }
+    localStorage.setItem(sentKey, JSON.stringify([...sent]));
+  }
+  const omitted = Math.max(0, result.overdue_count - result.overdue.length) + Math.max(0, result.upcoming_count - result.upcoming.length);
+  if (omitted) {
+    const item = document.createElement("li");
+    item.textContent = `${omitted} more due task(s) are outside the reminder list limit.`;
+    list.append(item);
+  }
+}
+
+document.querySelector("#trend-days").addEventListener("change", () => {
+  loadProgressTrends().catch((error) => showNotice(`Couldn't load progress trends: ${error.message}`));
+});
+document.querySelector("#reminder-toggle").addEventListener("click", async () => {
+  const enabled = localStorage.getItem("studypilot:browser-reminders") === "on";
+  if (enabled) {
+    localStorage.removeItem("studypilot:browser-reminders");
+  } else {
+    if (!("Notification" in window)) {
+      document.querySelector("#reminder-status").textContent = "This browser does not support notifications.";
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      document.querySelector("#reminder-status").textContent = "Notification permission was not granted. You can still see due tasks here.";
+      return;
+    }
+    localStorage.setItem("studypilot:browser-reminders", "on");
+  }
+  await loadReminders();
+});
+document.querySelector("#reminder-days").addEventListener("change", (event) => {
+  localStorage.setItem("studypilot:reminder-days", event.currentTarget.value);
+  loadReminders().catch((error) => { document.querySelector("#reminder-status").textContent = `Couldn't load reminders: ${error.message}`; });
+});
+window.setInterval(() => {
+  if (!document.hidden) loadReminders().catch(() => {});
+}, 30 * 60 * 1000);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) loadReminders().catch(() => {});
+});
+
 const focusGoalSelect = document.querySelector("#focus-goal-target");
 const focusGoalProgress = document.querySelector("#focus-goal-progress");
 const focusGoalToday = document.querySelector("#focus-goal-today");
@@ -489,6 +614,32 @@ document.querySelector("#backup-restore-form").addEventListener("submit", async 
   }
 });
 
+document.querySelector("#task-csv-import-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const input = document.querySelector("#task-csv-file");
+  const status = document.querySelector("#task-csv-import-status");
+  const button = form.querySelector("button[type=submit]");
+  if (!input.files?.[0]) return;
+  if (!window.confirm("Add tasks from this CSV to your current StudyPilot data? Importing the same file again creates duplicates.")) return;
+  button.disabled = true;
+  status.textContent = "Validating and importing tasks…";
+  try {
+    const body = new FormData();
+    body.append("file", input.files[0]);
+    const response = await window.studyPilotFetch("/api/imports/tasks.csv", { method: "POST", body });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.detail || `Request failed (${response.status})`);
+    status.textContent = `Imported ${result.tasks_added} task(s).`;
+    form.reset();
+    await refresh();
+  } catch (error) {
+    status.textContent = `Task CSV import failed: ${error.message}`;
+  } finally {
+    button.disabled = false;
+  }
+});
+
 async function loadTasks() {
   const parameters = new URLSearchParams({
     status: filter.value,
@@ -522,6 +673,7 @@ async function loadTasks() {
         <div class="task-title">${escapeHtml(task.title)}</div>
         <div class="task-meta"><span>${escapeHtml(task.subject)}</span><span>${formatDate(task.due_date)}</span><span>${task.estimated_minutes} min</span>${recurrenceLabel(task) ? `<span>${recurrenceLabel(task)} · through ${formatDate(task.recurrence_until, { month: "short", day: "numeric", year: "numeric" })}</span>` : ""}</div>
         ${task.description ? `<p class="task-description">${escapeHtml(task.description)}</p>` : ""}
+        ${task.resource_url ? `<a class="task-resource" href="${escapeHtml(task.resource_url)}" target="_blank" rel="noopener noreferrer">Open study resource</a>` : ""}
       </div>
       <button class="delete-button" type="button" data-action="delete" data-id="${task.id}" data-recurring="${task.recurrence_rule !== "none"}" aria-label="Delete ${escapeHtml(task.title)}">×</button>
     </li>`).join("");
@@ -572,7 +724,7 @@ async function loadDeadlines() {
 async function refresh() {
   showNotice("");
   try {
-    await Promise.all([loadProgress(), loadTasks(), loadPlan(), loadDeadlines(), loadCalendar()]);
+    await Promise.all([loadProgress(), loadTasks(), loadPlan(), loadDeadlines(), loadCalendar(), loadProgressTrends(), loadReminders()]);
   } catch (error) {
     showNotice(`Couldn't load your study space: ${error.message}`);
   }

@@ -6,7 +6,7 @@ OpenAI-compatible chat completion endpoint enables conversational study support.
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.12+
 - An internet connection only when installing dependencies or using a configured AI provider
 
 ## Run locally
@@ -107,6 +107,8 @@ be undone; export a backup first if you want to keep a copy.
 - Search task titles, subjects, and descriptions, then narrow the paginated list
   by subject or task status.
 - Assign a subject, due date, description, and estimated study duration.
+- Keep task notes in the description and attach an HTTP(S) study resource link;
+  links are included in task exports and account backups.
 - Run a pauseable focus timer, optionally link it to an open task, and review
   persisted study-session history. Actual focus minutes appear in the dashboard
   and are included in the progress-review evidence.
@@ -114,6 +116,12 @@ be undone; export a backup first if you want to keep a copy.
   seven-day activity chart. The goal preference is saved per account in the browser.
 - View upcoming/overdue deadlines, a due-date-based seven-day plan, and progress.
 - View due tasks and completed focus sessions in a week or month calendar.
+- Export due dates and focus-session history to an `.ics` calendar file.
+- Opt into browser reminders for deadlines within a chosen 1, 3, or 7 day
+  window. Notifications run while the dashboard is open; due tasks also remain
+  visible in the dashboard reminder panel.
+- Review 7, 30, or 90 day task-completion and focus-time trends with a current
+  activity streak. Set a daily focus goal and track the last seven days.
 - Ask for a local next-step suggestion without sending data anywhere.
 - Optionally configure an OpenAI-compatible chat completion service using
   `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL`.
@@ -128,9 +136,13 @@ be undone; export a backup first if you want to keep a copy.
 - Request an on-demand, model-assisted progress review with strengths, focus
   areas, evidence-based actions, and a link into the approval-based study planner.
 - Generate a goal-based AI study-plan draft, review it, and explicitly approve
-  sessions before they are created as dated tasks.
+  sessions before they are created as dated tasks. Drafts account for existing
+  dated task workload and can be edited, rescheduled, added to, or trimmed before
+  approval.
 - Download tasks as spreadsheet-friendly CSV, export a JSON backup containing
-  all tasks and focus-session history, and restore a validated backup additively.
+  all tasks, resource links, recurrence details, and focus-session history, and
+  restore a validated backup additively. Import task CSV files (up to 5 MB and
+  5,000 rows) with validated columns.
 - Optionally enable hosted accounts with separate task, plan, progress, and
   focus-session data for each student.
 - Review the AI sharing notice, export account data, or delete an account and its
@@ -185,7 +197,8 @@ The Study-time coach sends account-scoped daily focus totals and subject summari
 for the last 30 days only when that mode is selected. To improve exam alignment,
 include the relevant grade / degree, exam, board, university, or syllabus in chat.
 The AI Planner also sends your goal, subject, deadline, study level, and
-availability to the configured provider. It creates only a draft first; sessions
+availability, plus a summary of open task counts and estimated minutes by due
+date, to the configured provider. It creates only a draft first; sessions
 are added to the task database only after you select “Approve and add tasks”.
 AI provider requests have a 30-second timeout, prompt and response size limits,
 and bounded completion length. Provider error responses are reduced to a status
@@ -201,10 +214,20 @@ message rather than exposing raw response bodies.
 - `PATCH /api/tasks/{id}`
 - `DELETE /api/tasks/{id}`
 - `GET /api/progress`
+- `GET /api/progress/trends?days=30`
 - `GET /api/study-sessions?limit=20`
+- `GET /api/calendar?start=YYYY-MM-DD&days=7`
+- `GET /api/exports/calendar.ics?days=90`
 - `GET /api/exports/tasks.csv` to download all tasks as CSV
 - `GET /api/exports/backup.json` to download tasks and focus-session history as JSON
 - `POST /api/imports/backup` to add tasks and focus-session history from a JSON backup
+- `POST /api/imports/tasks.csv` with a multipart `file` field to import task rows
+
+## Release and recovery
+
+The app can run in a container with a persistent `/data` volume. For hosted
+deployment and recovery steps, see [the release and recovery guide](docs/release_recovery.md)
+and [the Vercel deployment guide](docs/deploy_vercel.md).
 - `POST /api/study-sessions` to save a completed focus session
 - `POST /api/progress/analyze` for an AI-assisted review of aggregate study progress
 - `GET /api/deadlines?days=7`

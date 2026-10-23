@@ -4,9 +4,9 @@ StudyPilot is a single-process FastAPI application with a static browser fronten
 and SQLite or PostgreSQL storage.
 
 - `app/api/routes.py` serves JSON endpoints and the files in `frontend/`.
-- `app/services/` contains task CRUD, due-date summaries, rule-based planning,
-  persisted focus-session history, and progress aggregation plus bounded evidence
-  summaries for model-assisted review.
+- `app/services/` contains task CRUD and resource links, due-date summaries,
+  rule-based planning, persisted focus-session history, and account-scoped daily
+  task, subject, and focus trends plus bounded evidence summaries for model-assisted review.
 - `app/database/` owns database connection lifecycles and ordered, backend-specific
   SQL migrations. Applied versions are recorded in `schema_migrations`.
 - `app/ai/` provides local next-step suggestions, structured cross-subject doubt
@@ -27,10 +27,13 @@ in version order. Existing task and study-session tables are retained because th
 initial migrations use `CREATE TABLE IF NOT EXISTS`; applied versions are recorded
 in the `schema_migrations` table. Add future schema changes as a new numbered SQL
 file for each supported backend rather than editing a migration that has shipped.
-The dashboard can export a complete JSON backup and restore it additively through
+The dashboard can export tasks as CSV, export a complete JSON backup and restore it additively through
 `POST /api/imports/backup`. Restore validates the backup format and record fields,
 maps study sessions to their restored tasks, and leaves existing records intact.
 Importing the same file more than once creates duplicate records.
+Task backups include notes, resource links, and recurrence data. Calendar events
+can be exported as an `.ics` file. Optional browser reminders use the selected
+1, 3, or 7 day window while the dashboard remains open.
 Task-list API requests are paginated and bounded to 100 rows per request. Indexes
 support task status and due-date ordering. The dashboard shows bounded deadline
 and per-day plan samples with complete counts and study-time totals.
@@ -56,3 +59,6 @@ GitHub Actions runs lint, compilation, tests, an OpenAPI route-contract check,
 and a dependency audit on Python 3.10 and 3.13.
 The AI Study Planner returns validated, reviewable drafts. `POST /api/plans/approve`
 validates the confirmed schedule again and atomically adds its sessions as tasks.
+AI planning requests include an account-scoped summary of open task counts and
+estimated minutes by due date. The user can edit, add, remove, and reschedule
+draft sessions before approval.

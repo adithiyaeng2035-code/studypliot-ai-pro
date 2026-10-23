@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from typing import Any
+from urllib.parse import urlsplit
 
 from app.database.db import Database
 
@@ -42,6 +43,11 @@ def restore_backup(
             due_date = task["due_date"]
             if due_date is not None:
                 due_date = due_date.isoformat()
+            resource_url = str(task.get("resource_url", "")).strip()
+            if resource_url:
+                parsed = urlsplit(resource_url)
+                if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.password or len(resource_url) > 2048:
+                    raise ValueError("task resource_url must be a valid HTTP or HTTPS link")
             values = (
                 title,
                 task["subject"].strip() or "General",
@@ -51,12 +57,13 @@ def restore_backup(
                 int(task["completed"]),
                 created_at,
                 completed_at,
+                resource_url,
             )
             sql = """INSERT INTO tasks
                      (title, subject, description, due_date, estimated_minutes,
-                      completed, created_at, completed_at, recurrence_rule,
+                      completed, created_at, completed_at, resource_url, recurrence_rule,
                       recurrence_until, recurrence_series_id, user_id)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)"""
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)"""
             recurrence_rule = task.get("recurrence_rule", "none")
             recurrence_until = task.get("recurrence_until")
             if recurrence_until is not None:

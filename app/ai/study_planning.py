@@ -74,6 +74,7 @@ def generate_study_plan(
     study_days_per_week: int,
     minutes_per_day: int,
     today: date | None = None,
+    existing_workload: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     goal = goal.strip()
     subject = subject.strip()
@@ -101,11 +102,20 @@ def generate_study_plan(
         "Return only a JSON object with a sessions array; every session must contain "
         'date (YYYY-MM-DD), title, description, and estimated_minutes (integer).'
     )
+    workload = existing_workload or []
+    workload_summary = "\n".join(
+        f"- {item['date'] or 'No due date'}: {item['open_tasks']} open task(s), "
+        f"about {item['estimated_minutes']} estimated minutes"
+        for item in workload
+    ) or "- No existing dated task commitments in this range."
     user_prompt = (
         f"Goal: {goal}\nSubject: {subject}\nStudy level: {level or 'not specified'}\n"
         f"Start date: {start_date.isoformat()}\nDeadline: {deadline.isoformat()}\n"
         f"Study days per week: {study_days_per_week}\n"
-        f"Maximum minutes per session: {minutes_per_day}"
+        f"Maximum minutes per session: {minutes_per_day}\n"
+        "Existing workload by date (do not duplicate these tasks; keep new study sessions "
+        "within daily capacity and put more time on lighter days):\n"
+        f"{workload_summary}"
     )
     response = complete_chat(system_prompt, user_prompt, json_mode=True)
     try:

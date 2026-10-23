@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="planner.css">
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <div class="app-shell">
       <aside class="sidebar">
         <a class="brand" href="/" aria-label="StudyPilot home"><span class="brand-mark">S</span> StudyPilot</a>
@@ -30,7 +31,7 @@
         <span class="sidebar-footer">Made for your next big goal</span>
       </aside>
 
-      <main class="main-content planner-main">
+      <main id="main-content" class="main-content planner-main">
         <header class="planner-header">
           <a class="back-link" href="/#dashboard">â† Back to overview</a>
           <span class="eyebrow">AI STUDY PLANNER</span>
@@ -91,7 +92,7 @@
               <span class="button-label">Generate a draft plan</span><span aria-hidden="true">â†’</span>
             </button>
           </form>
-          <p class="privacy-note">Your goal and schedule preferences are sent to the configured AI provider. Avoid entering sensitive information.</p>
+          <p class="privacy-note">Your goal, schedule preferences, and a summary of your open task workload by date are sent to the configured AI provider to balance the draft. Avoid entering sensitive information.</p>
         </section>
 
         <section id="draft-panel" class="panel draft-panel" aria-live="polite" hidden>
@@ -104,6 +105,7 @@
             <span class="draft-badge">Not added yet</span>
           </div>
           <div id="draft-sessions" class="draft-sessions"></div>
+          <button id="add-plan-session" class="secondary-button" type="button">Add a session</button>
           <div class="draft-footer">
             <p id="draft-totals" class="panel-subtitle"></p>
             <div class="draft-actions">

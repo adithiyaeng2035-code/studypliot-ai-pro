@@ -5,7 +5,7 @@ import hmac
 import io
 import json
 import time
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Literal
 
@@ -56,6 +56,7 @@ from app.services.document_extractor import (
     extract_document,
 )
 from app.services.progress_service import get_progress
+from app.services.progress_trends import get_progress_trends
 from app.services.study_planner import create_study_plan
 from app.services.study_session_service import (
     create_study_session,
@@ -66,6 +67,7 @@ from app.services.task_service import (
     count_tasks,
     create_task,
     delete_task,
+    import_tasks_csv,
     list_tasks,
     update_task,
 )
@@ -81,6 +83,7 @@ class TaskCreate(BaseModel):
     estimated_minutes: int = Field(default=30, ge=1, le=1440)
     recurrence_rule: Literal["none", "daily", "weekly", "monthly"] = "none"
     recurrence_until: date | None = None
+    resource_url: str = Field(default="", max_length=2048)
 
 
 class TaskUpdate(BaseModel):
@@ -89,6 +92,7 @@ class TaskUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=200)
     subject: str | None = Field(default=None, max_length=100)
     description: str | None = Field(default=None, max_length=2000)
+    resource_url: str | None = Field(default=None, max_length=2048)
     due_date: date | None = None
     estimated_minutes: int | None = Field(default=None, ge=1, le=1440)
     completed: bool | None = None
@@ -176,6 +180,7 @@ class BackupTask(BaseModel):
     recurrence_rule: Literal["none", "daily", "weekly", "monthly"] = "none"
     recurrence_until: date | None = None
     recurrence_series_id: int | None = Field(default=None, gt=0)
+    resource_url: str = Field(default="", max_length=2048)
 
 
 class BackupStudySession(BaseModel):
@@ -488,8 +493,22 @@ def create_app(
             raise HTTPException(status_code=502, detail=str(error)) from error
 
     @application.post("/api/plans/generate")
-    def generate_plan(payload: PlanRequest) -> dict:
+    def generate_plan(payload: PlanRequest, request: Request) -> dict:
         try:
+            user_id = request_user_id(request)
+            owner = " AND user_id = ?" if user_id is not None else ""
+            params: tuple[Any, ...] = (date.today().isoformat(), payload.deadline.isoformat())
+            if user_id is not None:
+                params += (user_id,)
+            with app_database.session() as connection:
+                workload_rows = connection.execute(
+                    """SELECT due_date AS date, COUNT(*) AS open_tasks,
+                              COALESCE(SUM(estimated_minutes), 0) AS estimated_minutes
+                       FROM tasks WHERE completed = 0
+                         AND (due_date IS NULL OR due_date BETWEEN ? AND ?)""" + owner
+                    + " GROUP BY due_date ORDER BY due_date LIMIT 92",
+                    params,
+                ).fetchall()
             return generate_study_plan(
                 goal=payload.goal,
                 subject=payload.subject,
@@ -497,6 +516,7 @@ def create_app(
                 level=payload.level,
                 study_days_per_week=payload.study_days_per_week,
                 minutes_per_day=payload.minutes_per_day,
+                existing_workload=[dict(row) for row in workload_rows],
             )
         except ValueError as error:
             raise HTTPException(status_code=400, detail=str(error)) from error
@@ -585,6 +605,17 @@ def create_app(
     def progress(request: Request) -> dict:
         return get_progress(app_database, user_id=request_user_id(request))
 
+    @application.get("/api/progress/trends")
+    def progress_trends(
+        request: Request, days: int = Query(default=30, ge=7, le=90)
+    ) -> dict:
+        try:
+            return get_progress_trends(
+                app_database, days=days, user_id=request_user_id(request)
+            )
+        except ValueError as error:
+            raise HTTPException(status_code=400, detail=str(error)) from error
+
     @application.get("/api/study-sessions")
     def study_sessions(
         request: Request, limit: int = Query(default=20, ge=1, le=100)
@@ -603,13 +634,86 @@ def create_app(
             app_database, start=start, days=days, user_id=request_user_id(request)
         )
 
+    @application.get("/api/exports/calendar.ics")
+    def export_calendar_ics(
+        request: Request,
+        start: date = Query(default_factory=date.today),
+        days: int = Query(default=90, ge=1, le=365),
+    ) -> Response:
+        """Export due dates and focus sessions as an iCalendar file."""
+        end = start + timedelta(days=days)
+        user_id = request_user_id(request)
+        owner = " AND user_id = ?" if user_id is not None else ""
+        params: tuple[Any, ...] = (start.isoformat(), end.isoformat())
+        if user_id is not None:
+            params += (user_id,)
+        with app_database.session() as connection:
+            tasks = connection.execute(
+                """SELECT id, title, subject, due_date, estimated_minutes, completed
+                   FROM tasks WHERE due_date >= ? AND due_date < ?""" + owner + " ORDER BY due_date, id",
+                params,
+            ).fetchall()
+            sessions = connection.execute(
+                """SELECT id, subject, duration_minutes, started_at, completed_at
+                   FROM study_sessions WHERE started_at >= ? AND started_at < ?""" + owner + " ORDER BY started_at",
+                params,
+            ).fetchall()
+
+        def escape_ical(value: str) -> str:
+            value = value.replace("\r\n", "\n").replace("\r", "\n")
+            value = "".join(character for character in value if character == "\n" or ord(character) >= 32)
+            return value.replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
+
+        def fold_ical_line(value: str) -> str:
+            chunks: list[str] = []
+            current = ""
+            for character in value:
+                limit = 75 if not chunks else 74
+                if current and len((current + character).encode("utf-8")) > limit:
+                    chunks.append(current)
+                    current = character
+                else:
+                    current += character
+            chunks.append(current)
+            return "\r\n ".join(chunks)
+
+        lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//StudyPilot//Study Calendar//EN", "CALSCALE:GREGORIAN"]
+        stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        for task in tasks:
+            due = date.fromisoformat(task["due_date"])
+            lines.extend([
+                "BEGIN:VEVENT", f"UID:studypilot-task-{task['id']}@studypilot",
+                f"DTSTAMP:{stamp}", f"DTSTART;VALUE=DATE:{due.strftime('%Y%m%d')}",
+                f"SUMMARY:{escape_ical(task['title'])}",
+                f"DESCRIPTION:{escape_ical(str(task['subject']))} - {int(task['estimated_minutes'])} minutes" + (" - Completed" if task["completed"] else ""),
+                "END:VEVENT",
+            ])
+        for session in sessions:
+            try:
+                started = datetime.fromisoformat(session["started_at"])
+                finished = datetime.fromisoformat(session["completed_at"])
+            except ValueError:
+                continue
+            lines.extend([
+                "BEGIN:VEVENT", f"UID:studypilot-session-{session['id']}@studypilot",
+                f"DTSTAMP:{stamp}", f"DTSTART:{started.astimezone(UTC).strftime('%Y%m%dT%H%M%SZ')}",
+                f"DTEND:{finished.astimezone(UTC).strftime('%Y%m%dT%H%M%SZ')}",
+                f"SUMMARY:{escape_ical(str(session['subject']) + ' study session')}",
+                f"DESCRIPTION:{int(session['duration_minutes'])} focus minutes", "END:VEVENT",
+            ])
+        lines.append("END:VCALENDAR")
+        return Response(
+            content="\r\n".join(fold_ical_line(line) for line in lines) + "\r\n", media_type="text/calendar; charset=utf-8",
+            headers={"Content-Disposition": 'attachment; filename="studypilot-calendar.ics"'},
+        )
+
     @application.get("/api/exports/tasks.csv")
     def export_tasks_csv(request: Request) -> Response:
         """Download all tasks as a spreadsheet-friendly CSV."""
         columns = (
-            "id", "title", "subject", "description", "due_date",
+            "id", "title", "subject", "description", "resource_url", "due_date",
             "estimated_minutes", "completed", "created_at", "completed_at",
-            "recurrence_rule", "recurrence_until",
+            "recurrence_rule", "recurrence_until", "recurrence_series_id",
         )
         user_id = request_user_id(request)
         owner_filter = " WHERE user_id = ?" if user_id is not None else ""
@@ -626,7 +730,7 @@ def create_app(
         writer.writerow(columns)
         for row in rows:
             values = [row[column] for column in columns]
-            values[6] = bool(values[6])
+            values[7] = bool(values[7])
             # Prefix formula-like text so opening the CSV in a spreadsheet cannot
             # execute user-entered task content as a formula.
             values = [
@@ -650,7 +754,7 @@ def create_app(
         owner_parameters = (user_id,) if user_id is not None else ()
         with app_database.session() as connection:
             tasks = connection.execute(
-                """SELECT id, title, subject, description, due_date,
+                """SELECT id, title, subject, description, resource_url, due_date,
                           estimated_minutes, completed, created_at, completed_at,
                           recurrence_rule, recurrence_until, recurrence_series_id
                    FROM tasks""" + owner_filter + " ORDER BY id",
@@ -691,6 +795,31 @@ def create_app(
         except ValueError as error:
             raise HTTPException(status_code=400, detail=str(error)) from error
 
+    @application.post("/api/imports/tasks.csv")
+    async def import_tasks_csv_file(
+        request: Request, file: UploadFile = File(...)
+    ) -> dict[str, int | str]:
+        """Import validated task rows from a UTF-8 CSV file."""
+        max_bytes = 5 * 1024 * 1024
+        try:
+            contents = await file.read(max_bytes + 1)
+        finally:
+            await file.close()
+        if len(contents) > max_bytes:
+            raise HTTPException(status_code=413, detail="CSV file must be 5 MB or smaller")
+        try:
+            text = contents.decode("utf-8-sig")
+            count = import_tasks_csv(
+                app_database, text, user_id=request_user_id(request)
+            )
+            return {"status": "imported", "tasks_added": count}
+        except UnicodeDecodeError as error:
+            raise HTTPException(status_code=400, detail="CSV file must use UTF-8 encoding") from error
+        except csv.Error as error:
+            raise HTTPException(status_code=400, detail="CSV file is malformed") from error
+        except ValueError as error:
+            raise HTTPException(status_code=400, detail=str(error)) from error
+
     @application.post("/api/study-sessions", status_code=201)
     def post_study_session(payload: StudySessionCreate, request: Request) -> dict:
         try:
@@ -713,9 +842,13 @@ def create_app(
             raise HTTPException(status_code=502, detail=str(error)) from error
 
     @application.get("/api/deadlines")
-    def deadlines(request: Request, days: int = Query(default=7, ge=1, le=90)) -> dict:
+    def deadlines(
+        request: Request,
+        days: int = Query(default=7, ge=1, le=90),
+        limit: int = Query(default=10, ge=1, le=25),
+    ) -> dict:
         return get_deadlines(
-            app_database, days=days, user_id=request_user_id(request)
+            app_database, days=days, limit=limit, user_id=request_user_id(request)
         )
 
     @application.get("/api/plan")
