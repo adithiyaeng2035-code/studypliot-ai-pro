@@ -2,6 +2,7 @@ const form = document.querySelector("#doubt-form");
 const providerNotice = document.querySelector("#provider-notice");
 const errorNotice = document.querySelector("#doubt-error");
 const resultPanel = document.querySelector("#doubt-result");
+const guidePanel = document.querySelector(".doubt-guide-panel");
 const questionField = form.elements.question;
 const documentField = document.querySelector("#document-file");
 
@@ -55,6 +56,7 @@ function showResult(result) {
   const followupWrap = document.querySelector("#followup-wrap");
   followupWrap.hidden = !result.follow_up;
   document.querySelector("#followup-text").textContent = result.follow_up;
+  guidePanel.hidden = true;
   resultPanel.hidden = false;
 }
 
@@ -71,6 +73,7 @@ documentField.addEventListener("change", updateQuestionRequirement);
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   errorNotice.hidden = true;
+  guidePanel.hidden = false;
   resultPanel.hidden = true;
   const button = form.querySelector("button[type=submit]");
   const buttonLabel = button.querySelector(".button-label");

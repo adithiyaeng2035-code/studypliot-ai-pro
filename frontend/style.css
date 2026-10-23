@@ -22,15 +22,17 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .app-shell { min-height: 100vh; }
 .sidebar {
   background: #fff; border-right: 1px solid var(--line); bottom: 0; display: flex;
-  flex-direction: column; left: 0; padding: 29px 20px 22px; position: fixed; top: 0; width: 234px;
+  box-shadow: 8px 0 30px #28244808; flex-direction: column; left: 0; overflow-x: hidden; overflow-y: auto;
+  overscroll-behavior: contain; padding: 29px 20px 22px; position: fixed; top: 0; width: 234px;
 }
 .brand { align-items: center; color: var(--ink); display: flex; font: 800 19px "Segoe UI", sans-serif; gap: 10px; text-decoration: none; }
 .brand-mark { align-items: center; background: var(--purple); border-radius: 11px; color: #fff; display: inline-flex; font-size: 16px; height: 34px; justify-content: center; width: 34px; }
 .nav-label, .eyebrow { color: #9a9caf; font-size: 10px; font-weight: 700; letter-spacing: 1.15px; }
 .nav-label { margin: 48px 0 12px 9px; }
 .sidebar nav { display: grid; gap: 5px; }
-.nav-link { align-items: center; border-radius: 9px; color: #777b91; display: flex; font-size: 14px; gap: 12px; padding: 11px 13px; text-decoration: none; }
+.nav-link { align-items: center; border-radius: 9px; color: #777b91; display: flex; font-size: 14px; gap: 12px; min-height: 44px; padding: 10px 13px; text-decoration: none; transition: background .16s ease, color .16s ease, transform .16s ease; }
 .nav-link.active, .nav-link:hover { background: var(--purple-light); color: var(--purple); }
+.nav-link:hover { transform: translateX(2px); }
 .nav-link:first-letter { font-size: 17px; }
 .sidebar-note { background: #f7f5ff; border: 1px solid #eeeaff; border-radius: 12px; margin-top: auto; padding: 16px; }
 .note-icon { color: var(--purple); display: block; font-size: 18px; margin-bottom: 10px; }
@@ -38,7 +40,7 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .sidebar-note p, .sidebar-footer { color: var(--muted); font-size: 11px; line-height: 1.7; }
 .sidebar-note p { margin: 6px 0 0; }
 .sidebar-footer { margin: 20px 0 0 3px; }
-.main-content { margin-left: 234px; max-width: 1600px; padding: 35px clamp(24px, 4.2vw, 66px) 22px; }
+.main-content { margin-left: 234px; max-width: 1600px; min-width: 0; padding: 35px clamp(24px, 4.2vw, 66px) 32px; }
 .topbar { align-items: center; display: flex; justify-content: space-between; }
 .topbar h1 { font: 700 clamp(24px, 3vw, 31px) "Segoe UI", sans-serif; letter-spacing: -.8px; margin: 6px 0 0; }
 .today-chip { align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 20px; color: #666a80; display: flex; font-size: 12px; gap: 8px; padding: 9px 13px; }
@@ -46,7 +48,7 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .intro { color: var(--muted); font-size: 13px; margin: 11px 0 24px; }
 .notice { background: #fff1f0; border: 1px solid #ffd6d2; border-radius: 9px; color: #a13b36; font-size: 13px; margin: -8px 0 18px; padding: 11px 14px; }
 .stats-grid { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.stat-card, .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 13px; box-shadow: 0 3px 12px #28244805; }
+.stat-card, .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 5px 18px #28244808; }
 .stat-card { min-height: 120px; padding: 17px 19px; }
 .stat-label, .stat-caption { color: var(--muted); display: block; font-size: 11px; }
 .stat-card strong { display: block; font: 700 27px "Segoe UI", sans-serif; margin: 8px 0 3px; }
@@ -104,7 +106,7 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .calendar-grid.month-view .calendar-day { min-height: 82px; }
 .calendar-grid.month-view .calendar-events { max-height: 52px; }
 .content-grid { align-items: start; display: grid; gap: 17px; grid-template-columns: minmax(0, 1.45fr) minmax(275px, .88fr); margin-top: 18px; }
-.panel { padding: 19px; }
+.panel { padding: 21px; }
 .panel-heading { align-items: center; display: flex; justify-content: space-between; }
 .panel-heading h2, .assistant-title h2 { font: 700 17px "Segoe UI", sans-serif; letter-spacing: -.3px; margin: 4px 0 0; }
 .panel-heading .eyebrow, .assistant-title .eyebrow { font-size: 9px; }
@@ -126,6 +128,7 @@ input:focus, textarea:focus, select:focus { border-color: #aa9aec !important; bo
 #backup-file { align-self: center; flex: 1; min-width: 220px; }
 .export-actions button:disabled { cursor: wait; opacity: .65; }
 .account-box { display: grid; gap: 6px; margin: 12px 10px; }
+.account-box[hidden] { display: none; }
 .account-box span { color: #77798b; font-size: 12px; overflow-wrap: anywhere; }
 .account-box button { background: transparent; border: 1px solid #dfe0e9; border-radius: 7px; color: #4e5064; cursor: pointer; min-height: 34px; }
 .account-privacy { color: #77798b; font-size: 11px; line-height: 1.55; }
@@ -225,22 +228,35 @@ footer { color: #a1a3b1; font-size: 10px; padding: 22px 2px 3px; }
 footer span { color: #c6c4d1; padding: 0 4px; }
 .sr-only { clip: rect(0, 0, 0, 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
 
+button, a, input, textarea, select { transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease; }
+button:not(:disabled) { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+.panel-heading h2, .assistant-title h2 { font-size: 18px; }
+.panel-subtitle { font-size: 12px; }
+.eyebrow { line-height: 1.5; }
+.sidebar-note { box-shadow: inset 0 1px #fff; }
+
 @media (max-width: 1050px) {
   .sidebar { width: 200px; }
   .main-content { margin-left: 200px; padding-inline: 25px; }
-  .content-grid { grid-template-columns: minmax(0, 1.2fr) minmax(250px, .9fr); }
+  .content-grid { grid-template-columns: minmax(0, 1fr); }
+  .right-column { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stats-grid { gap: 9px; }
   .stat-card { padding: 15px; }
 }
 @media (max-width: 760px) {
-  .sidebar { border-bottom: 1px solid var(--line); border-right: 0; bottom: auto; height: auto; padding: 12px 16px 10px; right: 0; width: 100%; z-index: 2; }
+  .sidebar { border-bottom: 1px solid var(--line); border-right: 0; bottom: auto; height: auto; left: auto; max-height: none; overflow: visible; padding: 12px 16px 10px; position: sticky; right: auto; top: 0; width: 100%; z-index: 2; }
   .brand { font-size: 16px; }
   .brand-mark { height: 30px; width: 30px; }
   .nav-label, .sidebar-note, .sidebar-footer { display: none; }
   .sidebar nav { display: flex; gap: 5px; margin-top: 9px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
   .sidebar nav::-webkit-scrollbar { display: none; }
   .nav-link { flex: 0 0 auto; font-size: 11px; gap: 7px; min-height: 40px; padding: 8px 10px; white-space: nowrap; }
-  .main-content { margin: 0; padding: 106px 16px 20px; }
+  .account-box { align-items: center; display: flex; flex-wrap: wrap; gap: 7px; margin: 6px 0 0; }
+  .account-box > span { flex: 1; min-width: 0; }
+  .account-box button { min-height: 30px; padding: 4px 9px; }
+  .account-privacy { flex-basis: 100%; }
+  .main-content { margin: 0; padding: 24px 16px; width: 100%; }
   .topbar h1 { font-size: 25px; }
   .intro { font-size: 12px; line-height: 1.6; }
   .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -270,4 +286,8 @@ footer span { color: #c6c4d1; padding: 0 4px; }
   .task-list-filters { grid-template-columns: minmax(0, 1fr); }
   .panel { padding: 15px; }
   .stat-card strong { font-size: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }

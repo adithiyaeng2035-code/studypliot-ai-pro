@@ -1,12 +1,13 @@
 .tutor-main { max-width: 1100px; display: flex; flex-direction: column; min-height: 100vh; }
-.tutor-header { margin-bottom: 20px; }
+.tutor-header { background: linear-gradient(120deg, #fbfaff, #eff7ff 60%, #effaf5); border: 1px solid #ebe8fa; border-radius: 18px; margin-bottom: 20px; padding: clamp(20px, 3vw, 30px); }
+.tutor-header > .eyebrow { display: block; margin: 0 0 5px; }
 .tutor-header h1 { font: 700 clamp(26px, 3vw, 35px) "Segoe UI", sans-serif; letter-spacing: -1px; margin: 6px 0 5px; }
 .tutor-header p { color: #777b91; font-size: 13px; margin: 0; }
 .tutor-title-row { align-items: center; display: flex; gap: 15px; justify-content: space-between; }
 .quiet-button { background: #fff; border: 1px solid #e8e7ef; border-radius: 8px; color: #5e6073; cursor: pointer; font: 600 12px "Segoe UI", sans-serif; padding: 10px 13px; }
 .quiet-button:hover { border-color: #c9c1f4; color: var(--purple); }
 .tutor-notice { background: #fff8e8; border: 1px solid #f2e1b8; border-radius: 9px; color: #74561c; font-size: 12px; line-height: 1.6; margin-bottom: 12px; padding: 11px 14px; }
-.chat-panel { background: #fff; border: 1px solid #ecebf2; border-radius: 14px; box-shadow: 0 8px 30px #29234a0a; display: flex; flex: 1; flex-direction: column; min-height: 500px; overflow: hidden; }
+.chat-panel { background: #fff; border: 1px solid #ecebf2; border-radius: 18px; box-shadow: 0 12px 36px #29234a10; display: flex; flex: 1; flex-direction: column; min-height: 500px; overflow: hidden; }
 .chat-messages { display: flex; flex: 1; flex-direction: column; gap: 20px; overflow-y: auto; padding: clamp(17px, 4vw, 34px); }
 .chat-message { align-items: flex-start; display: flex; gap: 11px; max-width: 850px; }
 .user-message { align-self: flex-end; flex-direction: row-reverse; }
@@ -22,7 +23,7 @@
 .quick-prompts button { background: #faf9ff; border: 1px solid #e9e6f7; border-radius: 18px; color: #655b8e; cursor: pointer; font-size: 11px; padding: 8px 11px; }
 .quick-prompts button:hover { background: #f1edff; border-color: #c9c1f4; }
 .chat-composer { background: #fcfcfe; border-top: 1px solid #f0eff5; padding: 15px clamp(14px, 3vw, 26px) 13px; }
-.chat-composer textarea { background: #fff; border: 1px solid #e5e4ec; border-radius: 10px; color: var(--ink); font: 13px/1.6 "Segoe UI", sans-serif; outline: none; padding: 12px 13px; resize: vertical; width: 100%; }
+.chat-composer textarea { background: #fff; border: 1px solid #e5e4ec; border-radius: 10px; color: var(--ink); font: 14px/1.6 "Segoe UI", sans-serif; min-height: 76px; outline: none; padding: 12px 13px; resize: vertical; width: 100%; }
 .study-context-field { color: #777b91; display: block; font-size: 10px; margin: 0 0 5px 2px; }
 .chat-composer #study-context { background: #fff; border: 1px solid #e5e4ec; border-radius: 8px; color: var(--ink); font: 11px "Segoe UI", sans-serif; margin-bottom: 8px; outline: none; padding: 9px 11px; width: 100%; }
 .chat-composer #study-context:focus { border-color: #a89ae8; box-shadow: 0 0 0 3px #8e7be31a; }
@@ -38,5 +39,5 @@
 .send-button { align-items: center; display: inline-flex; gap: 9px; padding: 9px 14px; }
 .send-button:disabled { cursor: wait; opacity: .65; }
 .tutor-footnote { line-height: 1.6; margin: 10px 2px 0; }
-@media (max-width: 760px) { .tutor-main { min-height: 100vh; padding-top: 106px; } .chat-panel { min-height: 62vh; } .tutor-title-row { align-items: flex-start; } .voice-status { max-width: 145px; line-height: 1.4; } .composer-actions { align-items: flex-end; } }
+@media (max-width: 760px) { .tutor-main { min-height: 100vh; padding-top: 24px; } .chat-panel { min-height: 62vh; } .tutor-title-row { align-items: flex-start; } .voice-status { max-width: 145px; line-height: 1.4; } .composer-actions { align-items: flex-end; } }
 @media (max-width: 420px) { .voice-button span { display: none; } .voice-button { min-width: 40px; } .composer-actions { gap: 7px; } }

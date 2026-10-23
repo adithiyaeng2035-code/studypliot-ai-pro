@@ -1,9 +1,10 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f1effb">
+    <meta name="description" content="Get a clear, step-by-step explanation for a study question or course document.">
     <title>Doubt Solver | StudyPilot</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="doubts.css">
@@ -15,16 +16,16 @@
         <a class="brand" href="/" aria-label="StudyPilot home"><span class="brand-mark">S</span> StudyPilot</a>
         <p class="nav-label">Workspace</p>
         <nav aria-label="Main navigation">
-          <a class="nav-link" href="/#dashboard">â–¦ <span>Overview</span></a>
-          <a class="nav-link" href="/#tasks">âœ“ <span>My tasks</span></a>
-          <a class="nav-link" href="/#plan">â—· <span>Study plan</span></a>
-          <a class="nav-link" href="planner.html">âœ¦ <span>Plan my studies</span></a>
-          <a class="nav-link active" href="doubts.html" aria-current="page">âœ¦ <span>Ask a doubt</span></a>
+          <a class="nav-link" href="/#dashboard">▦ <span>Overview</span></a>
+          <a class="nav-link" href="/#tasks">✓ <span>My tasks</span></a>
+          <a class="nav-link" href="/#plan">◷ <span>Study plan</span></a>
+          <a class="nav-link" href="planner.html">✦ <span>Plan my studies</span></a>
+          <a class="nav-link active" href="doubts.html" aria-current="page">✦ <span>Ask a doubt</span></a>
           <a class="nav-link" href="tutor.html">◉ <span>AI study tutor</span></a>
         </nav>
-        <div class="account-box"><span id="account-email"></span><button id="sign-out" type="button">Sign out</button><details class="account-privacy" hidden><summary>Privacy &amp; account</summary><p>Questions, goals, and schedule details you submit to AI features are sent to this app’s configured AI provider. Progress reviews send aggregated progress and subject totals. Check that provider’s privacy policy before sharing sensitive information.</p><button class="delete-account" id="delete-account" type="button">Delete account and data</button></details></div>
+        <div class="account-box" hidden><span id="account-email"></span><button id="sign-out" type="button">Sign out</button><details class="account-privacy" hidden><summary>Privacy &amp; account</summary><p>Questions, goals, and schedule details you submit to AI features are sent to this app’s configured AI provider. Progress reviews send aggregated progress and subject totals. Check that provider’s privacy policy before sharing sensitive information.</p><button class="delete-account" id="delete-account" type="button">Delete account and data</button></details></div>
         <div class="sidebar-note">
-          <span class="note-icon">âœ¦</span>
+          <span class="note-icon">✦</span>
           <strong>Curiosity moves you forward.</strong>
           <p>Ask clearly, learn the idea, then check your understanding.</p>
         </div>
@@ -33,7 +34,7 @@
 
       <main id="main-content" class="main-content doubt-main">
         <header class="doubt-header">
-          <a class="back-link" href="/#dashboard">â† Back to overview</a>
+          <a class="back-link" href="/#dashboard">← Back to overview</a>
           <span class="eyebrow">STUDY SUPPORT</span>
           <h1>Let's work through it.</h1>
           <p class="intro">Share what you're stuck on. StudyPilot will explain the idea, break down the reasoning, and point out concepts to review.</p>
@@ -46,7 +47,7 @@
           <section class="panel doubt-form-panel">
             <div class="panel-heading">
               <div><span class="eyebrow">YOUR QUESTION</span><h2>What would you like help with?</h2></div>
-              <span class="soft-icon">âœŽ</span>
+              <span class="soft-icon">✎</span>
             </div>
             <p class="panel-subtitle">Works across subjects. Include your attempt or the exact step that feels unclear.</p>
 
@@ -67,7 +68,7 @@
               </label>
               <label class="doubt-field">
                 <span id="question-label">Your doubt <em>required</em></span>
-                <textarea name="question" rows="6" maxlength="5000" placeholder="Describe the question or concept you're stuck onâ€¦" required></textarea>
+                <textarea name="question" rows="6" maxlength="5000" placeholder="Describe the question or concept you're stuck on…" required></textarea>
               </label>
               <label class="doubt-field">
                 <span>Upload a PDF or Excel file <em>optional</em></span>
@@ -94,12 +95,26 @@
                 <textarea name="context" rows="3" maxlength="2000" placeholder="Share your working, notes, or where you got stuck"></textarea>
               </label>
               <button class="primary-button solve-button" type="submit">
-                <span class="button-label">Explain and analyze</span><span aria-hidden="true">â†’</span>
+                <span class="button-label">Explain and analyze</span><span aria-hidden="true">→</span>
               </button>
             </form>
             <p class="privacy-note">Your question and extracted document text are sent to this app's configured AI provider. Avoid uploading private or sensitive information.</p>
           </section>
 
+          <section class="panel doubt-guide-panel" aria-labelledby="doubt-guide-title">
+            <div class="panel-heading">
+              <div><span class="eyebrow">GET A CLEARER ANSWER</span><h2 id="doubt-guide-title">A useful question has context</h2></div>
+              <span class="soft-icon" aria-hidden="true">?</span>
+            </div>
+            <p class="panel-subtitle">A few details help StudyPilot choose the right explanation and examples.</p>
+            <ul class="doubt-guide-list">
+              <li><strong>Name the topic.</strong><span>Include the subject, chapter, or skill.</span></li>
+              <li><strong>Show where you got stuck.</strong><span>Paste the step, formula, or result that feels unclear.</span></li>
+              <li><strong>Choose your study level.</strong><span>The explanation can adapt to your course.</span></li>
+            </ul>
+            <div class="doubt-example"><span class="eyebrow">EXAMPLE</span><p>“In quadratic equations, why do we use the plus-or-minus sign in the formula?”</p></div>
+            <p class="privacy-note">For document analysis, upload a text-based PDF or Excel workbook. The extracted text is sent to your configured AI provider.</p>
+          </section>
           <section id="doubt-result" class="panel result-panel" aria-live="polite" hidden>
             <div class="result-heading">
               <div><span class="eyebrow">YOUR EXPLANATION</span><h2>Let's make it click.</h2></div>

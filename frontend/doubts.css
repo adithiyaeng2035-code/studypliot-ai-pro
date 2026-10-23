@@ -1,5 +1,6 @@
 .doubt-main { max-width: 1280px; }
-.doubt-header { margin-bottom: 23px; max-width: 700px; }
+.doubt-header { background: linear-gradient(120deg, #fbfaff, #eff7ff 60%, #effaf5); border: 1px solid #ebe8fa; border-radius: 18px; margin-bottom: 23px; max-width: 900px; padding: clamp(20px, 3vw, 30px); }
+.doubt-header > .eyebrow { display: block; margin: 0 0 5px; }
 .back-link { color: #777b91; display: inline-block; font-size: 12px; margin-bottom: 27px; text-decoration: none; }
 .back-link:hover { color: var(--purple); }
 .doubt-header h1 { font: 700 clamp(27px, 3.2vw, 36px) "Segoe UI", sans-serif; letter-spacing: -1px; margin: 7px 0 0; }
@@ -12,6 +13,8 @@
 .doubt-field:first-child { margin-top: 0; }
 .doubt-field em { color: #a1a3b1; font-size: 10px; font-style: normal; font-weight: 400; margin-left: 4px; }
 .doubt-field input, .doubt-field textarea, .doubt-field select { background: #fff; border: 1px solid #e8e7ef; border-radius: 8px; color: var(--ink); font-size: 12px; font-weight: 400; min-width: 0; outline: none; padding: 11px 12px; width: 100%; }
+.doubt-field input, .doubt-field select { min-height: 44px; }
+.doubt-field textarea { font-size: 14px; }
 .doubt-field textarea { line-height: 1.65; resize: vertical; }
 .doubt-field input::placeholder, .doubt-field textarea::placeholder { color: #a3a6b5; }
 .doubt-field input[type="file"] { font-size: 11px; padding: 8px; }
@@ -40,10 +43,19 @@
 .followup-box strong { color: #514887; font-size: 11px; }
 .followup-box p { margin-top: 5px; }
 .accuracy-note { margin-top: 14px; }
+.doubt-guide-panel { background: linear-gradient(155deg, #fff, #fbfaff); }
+.doubt-guide-panel[hidden] { display: none; }
+.doubt-guide-list { display: grid; gap: 14px; list-style: none; margin: 20px 0; padding: 0; }
+.doubt-guide-list li { border-left: 3px solid #d9d1ff; display: grid; gap: 3px; padding: 2px 0 2px 12px; }
+.doubt-guide-list strong { color: #45485d; font-size: 13px; }
+.doubt-guide-list span { color: #777b91; font-size: 12px; line-height: 1.6; }
+.doubt-example { background: #f3f0ff; border-radius: 12px; margin-top: 20px; padding: 15px; }
+.doubt-example .eyebrow { display: block; margin: 0 0 7px; }
+.doubt-example p { color: #565078; font-size: 13px; line-height: 1.7; margin: 0; }
 @media (max-width: 920px) {
   .doubt-layout { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 760px) {
-  .doubt-main { padding-top: 108px; }
+  .doubt-main { padding-top: 24px; }
   .back-link { margin-bottom: 21px; }
 }

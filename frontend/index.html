@@ -1,10 +1,11 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f1effb">
-    <title>StudyPilot â€” your study space</title>
+    <meta name="description" content="Plan study sessions, manage deadlines, and track your learning progress with StudyPilot.">
+    <title>StudyPilot — your study space</title>
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
@@ -14,16 +15,16 @@
         <a class="brand" href="/" aria-label="StudyPilot home"><span class="brand-mark">S</span> StudyPilot</a>
         <p class="nav-label">Workspace</p>
         <nav aria-label="Main navigation">
-          <a class="nav-link active" href="#dashboard">â–¦ <span>Overview</span></a>
-          <a class="nav-link" href="#tasks">âœ“ <span>My tasks</span></a>
-          <a class="nav-link" href="#plan">â—· <span>Study plan</span></a>
-          <a class="nav-link" href="planner.html">âœ¦ <span>Plan my studies</span></a>
-          <a class="nav-link" href="doubts.html">âœ¦ <span>Ask a doubt</span></a>
+          <a class="nav-link active" href="#dashboard" aria-current="page">▦ <span>Overview</span></a>
+          <a class="nav-link" href="#tasks">✓ <span>My tasks</span></a>
+          <a class="nav-link" href="#plan">◷ <span>Study plan</span></a>
+          <a class="nav-link" href="planner.html">✦ <span>Plan my studies</span></a>
+          <a class="nav-link" href="doubts.html">✦ <span>Ask a doubt</span></a>
           <a class="nav-link" href="tutor.html">◉ <span>AI study tutor</span></a>
         </nav>
-        <div class="account-box"><span id="account-email"></span><button id="sign-out" type="button">Sign out</button><details class="account-privacy" hidden><summary>Privacy &amp; account</summary><p>Questions, goals, and schedule details you submit to AI features are sent to this app’s configured AI provider. Progress reviews send aggregated progress and subject totals. Check that provider’s privacy policy before sharing sensitive information.</p><button class="delete-account" id="delete-account" type="button">Delete account and data</button></details></div>
+        <div class="account-box" hidden><span id="account-email"></span><button id="sign-out" type="button">Sign out</button><details class="account-privacy" hidden><summary>Privacy &amp; account</summary><p>Questions, goals, and schedule details you submit to AI features are sent to this app’s configured AI provider. Progress reviews send aggregated progress and subject totals. Check that provider’s privacy policy before sharing sensitive information.</p><button class="delete-account" id="delete-account" type="button">Delete account and data</button></details></div>
         <div class="sidebar-note">
-          <span class="note-icon">âœ¦</span>
+          <span class="note-icon">✦</span>
           <strong>Small steps add up.</strong>
           <p>Keep your next study session focused and achievable.</p>
         </div>
@@ -31,7 +32,7 @@
       </aside>
 
       <main class="main-content" id="main-content">
-        <header class="topbar">
+        <header class="topbar" id="dashboard">
           <div><span class="eyebrow">YOUR PERSONAL STUDY SPACE</span><h1>Good to see you.</h1></div>
           <div class="today-chip"><span class="status-dot"></span> <span id="today-label">Today</span></div>
         </header>
@@ -39,10 +40,10 @@
         <div id="notice" class="notice" role="status" hidden></div>
 
         <section class="stats-grid" aria-label="Study progress">
-          <article class="stat-card"><span class="stat-label">Tasks completed</span><strong id="completed-count">â€”</strong><span id="completion-caption" class="stat-caption">Loading progressâ€¦</span></article>
-          <article class="stat-card"><span class="stat-label">Still to do</span><strong id="open-count">â€”</strong><span class="stat-caption">Open study tasks</span></article>
-          <article class="stat-card"><span class="stat-label">Study time logged</span><strong><span id="minutes-count">â€”</span><small> min</small></strong><span id="focus-minutes-caption" class="stat-caption">From focus sessions</span></article>
-          <article class="stat-card"><span class="stat-label">Completion rate</span><strong><span id="completion-rate">â€”</span><small>%</small></strong><span class="stat-caption">You're building momentum</span></article>
+          <article class="stat-card"><span class="stat-label">Tasks completed</span><strong id="completed-count">—</strong><span id="completion-caption" class="stat-caption">Loading progress…</span></article>
+          <article class="stat-card"><span class="stat-label">Still to do</span><strong id="open-count">—</strong><span class="stat-caption">Open study tasks</span></article>
+          <article class="stat-card"><span class="stat-label">Study time logged</span><strong><span id="minutes-count">—</span><small> min</small></strong><span id="focus-minutes-caption" class="stat-caption">From focus sessions</span></article>
+          <article class="stat-card"><span class="stat-label">Completion rate</span><strong><span id="completion-rate">—</span><small>%</small></strong><span class="stat-caption">You're building momentum</span></article>
         </section>
 
         <section class="panel focus-goal-panel" aria-labelledby="focus-goal-title">
@@ -130,9 +131,9 @@
               <label><span>Search tasks</span><input id="task-search" type="search" maxlength="100" placeholder="Title, subject, or description"></label>
               <label><span>Filter by subject</span><input id="task-subject-filter" type="search" maxlength="100" placeholder="e.g. Biology"></label>
             </div>
-            <ul id="task-list" class="task-list" aria-live="polite"><li class="empty-state">Loading your tasksâ€¦</li></ul>
+            <ul id="task-list" class="task-list" aria-live="polite"><li class="empty-state">Loading your tasks…</li></ul>
             <div class="pagination" aria-label="Task pages">
-              <span id="task-page-summary" class="page-summary">Loading tasksâ€¦</span>
+              <span id="task-page-summary" class="page-summary">Loading tasks…</span>
               <div class="page-buttons">
                 <button id="previous-page" type="button" disabled>Previous</button>
                 <button id="next-page" type="button" disabled>Next</button>
@@ -144,25 +145,25 @@
             <section class="panel plan-panel" id="plan">
               <div class="panel-heading">
                 <div><span class="eyebrow">A LITTLE AT A TIME</span><h2>Study plan</h2></div>
-                <span class="soft-icon">â—·</span>
+                <span class="soft-icon">◷</span>
               </div>
               <p class="panel-subtitle">Open tasks grouped by due date. Adjust dates and effort in the task list.</p>
-              <div id="plan-list" class="plan-list"><p class="empty-state">Building your planâ€¦</p></div>
+              <div id="plan-list" class="plan-list"><p class="empty-state">Building your plan…</p></div>
             </section>
             <section class="panel deadlines-panel">
               <div class="panel-heading">
                 <div><span class="eyebrow">COMING UP</span><h2>Deadlines</h2></div>
-                <span class="soft-icon">âŒ</span>
+                <span class="soft-icon">⌁</span>
               </div>
-              <div id="deadline-list" class="deadline-list"><p class="empty-state">Checking deadlinesâ€¦</p></div>
+              <div id="deadline-list" class="deadline-list"><p class="empty-state">Checking deadlines…</p></div>
             </section>
             <section class="panel progress-insight-panel">
               <div class="panel-heading">
                 <div><span class="eyebrow">MODEL-ASSISTED REVIEW</span><h2>Progress insights</h2></div>
-                <span class="soft-icon">âœ¦</span>
+                <span class="soft-icon">✦</span>
               </div>
               <p class="panel-subtitle">Ask the configured AI model to review task completion, subject coverage, and deadlines, then suggest practical next steps.</p>
-              <button id="analyze-progress" class="primary-button insight-button" type="button">Analyze my progress <span aria-hidden="true">â†’</span></button>
+              <button id="analyze-progress" class="primary-button insight-button" type="button">Analyze my progress <span aria-hidden="true">→</span></button>
               <div id="progress-insight-status" class="insight-status" role="status" aria-live="polite"></div>
               <div id="progress-insight-result" class="progress-insight-result" hidden>
                 <p id="progress-insight-summary"></p>
@@ -178,7 +179,7 @@
             <section class="panel focus-panel">
               <div class="panel-heading">
                 <div><span class="eyebrow">FOCUSED STUDY</span><h2>Study session timer</h2></div>
-                <span class="soft-icon">â—·</span>
+                <span class="soft-icon">◷</span>
               </div>
               <p class="panel-subtitle">Focus on one subject or task. Completed sessions are saved to your history.</p>
               <form id="focus-form" class="focus-form">
@@ -197,16 +198,16 @@
               <div class="focus-history">
                 <h3>Recent sessions</h3>
                 <p id="focus-history-summary" class="focus-history-summary"></p>
-                <ul id="focus-history-list"><li class="empty-state">Loading sessionsâ€¦</li></ul>
+                <ul id="focus-history-list"><li class="empty-state">Loading sessions…</li></ul>
               </div>
             </section>
             <section class="panel assistant-panel">
-              <div class="assistant-title"><span class="assistant-icon">âœ¦</span><div><span class="eyebrow">STUDY SUPPORT</span><h2>Ask StudyPilot</h2></div></div>
+              <div class="assistant-title"><span class="assistant-icon">✦</span><div><span class="eyebrow">STUDY SUPPORT</span><h2>Ask StudyPilot</h2></div></div>
               <p class="panel-subtitle">Get a suggestion for your next study step.</p>
               <form id="assistant-form" class="assistant-form">
                 <label class="sr-only" for="assistant-message">Ask a study question</label>
                 <input id="assistant-message" name="message" maxlength="4000" placeholder="What should I focus on today?" required>
-                <button type="submit" aria-label="Ask StudyPilot">â†’</button>
+                <button type="submit" aria-label="Ask StudyPilot">→</button>
               </form>
               <p id="assistant-reply" class="assistant-reply" aria-live="polite"></p>
             </section>
@@ -236,7 +237,7 @@
             </section>
           </div>
         </div>
-        <footer>StudyPilot <span>Â·</span> Make progress at your pace</footer>
+        <footer>StudyPilot <span>·</span> Make progress at your pace</footer>
       </main>
     </div>
     <script src="auth-client.js"></script>

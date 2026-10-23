@@ -13,6 +13,8 @@ if (!authPage) {
       }
       if (state.authenticated) {
         window.studyPilotCsrfToken = state.csrf_token;
+        const accountBox = document.querySelector(".account-box");
+        if (accountBox) accountBox.hidden = false;
         const email = document.querySelector("#account-email");
         if (email) {
           const displayName = state.user.full_name || state.user.email;
@@ -24,7 +26,7 @@ if (!authPage) {
       }
       return true;
     } catch (error) {
-      const message = document.querySelector("#notice");
+      const message = document.querySelector("#notice, #planner-notice, #doubt-error, #tutor-notice");
       if (message) {
         message.textContent = `Couldn't verify your account session: ${error.message}`;
         message.hidden = false;

@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f1effb">
+    <meta name="description" content="Ask StudyPilot to explain course topics, prepare for exams, or review study habits.">
     <title>AI Study Tutor | StudyPilot</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="tutor.css">
@@ -17,11 +18,12 @@
         <nav aria-label="Main navigation">
           <a class="nav-link" href="/#dashboard">▦ <span>Overview</span></a>
           <a class="nav-link" href="/#tasks">✓ <span>My tasks</span></a>
+          <a class="nav-link" href="/#plan">◷ <span>Study plan</span></a>
           <a class="nav-link" href="planner.html">✦ <span>Plan my studies</span></a>
           <a class="nav-link" href="doubts.html">✎ <span>Explain a doubt</span></a>
           <a class="nav-link active" href="tutor.html" aria-current="page">◉ <span>AI study tutor</span></a>
         </nav>
-        <div class="account-box"><span id="account-email"></span><button id="sign-out" type="button">Sign out</button><details class="account-privacy" hidden><summary>Privacy &amp; account</summary><p>Questions sent to the tutor are processed by this app’s configured AI provider. Chat history stays in this browser tab and is not saved on the server. Time Coach sends account-scoped focus-session totals and subject summaries to the AI provider.</p><button class="delete-account" id="delete-account" type="button">Delete account and data</button></details></div>
+        <div class="account-box" hidden><span id="account-email"></span><button id="sign-out" type="button">Sign out</button><details class="account-privacy" hidden><summary>Privacy &amp; account</summary><p>Questions sent to the tutor are processed by this app’s configured AI provider. Chat history stays in this browser tab and is not saved on the server. Time Coach sends account-scoped focus-session totals and subject summaries to the AI provider.</p><button class="delete-account" id="delete-account" type="button">Delete account and data</button></details></div>
         <div class="sidebar-note"><span class="note-icon">✦</span><strong>Learn it in your own words.</strong><p>Ask a question, get a clear explanation, and follow up until it makes sense.</p></div>
         <span class="sidebar-footer">Made for your next big goal</span>
       </aside>
